@@ -4,9 +4,9 @@ import random
 
 ## Constant
 
-cst_n = 3
+cst_n = 3 #256
 cst_grayLength = 256
-cst_alpha = 0.1
+cst_alpha = 1 #0.1
 cst_h = 4
 cst_w = 10
 
@@ -48,7 +48,10 @@ def createH(subH):
     return
 
 def createRandomM():
-    return
+    m = []
+    for i in range(cst_n*cst_alpha):
+        m.append(random.randint(0,1))
+    return m
 
 def codeTrellis(H, x):
     return
