@@ -56,15 +56,20 @@ def transformVectorToMatrix(vector):
 def leastSignificantBitOfNumber(number):
     return number%2
 
+# Given a vector
+# Return a vector with its values being equals to the last significant bit of given vector's values
 def leastSignificantBitForVector(vector):
     result = []
     for i in range(len(vector)):
         result.append(leastSignificantBitOfNumber(vector[i]))
     return result
 
+# Given an image (matrix)
+# Return the vector x
 def createX(image):
     return leastSignificantBitForVector(transformMatrixToVector(image))
 
+# Return the submatrix that help create the matrix H
 def createSubH():
     subH = [[1, 0], [1, 1]]
     return subH
@@ -88,6 +93,7 @@ def createH(subH):
 
     return H
 
+# Return a vector of length cst_n*cst_alpha which represents a message. Its values represent bits randomly generated.
 def createRandomM():
     m = []
     for i in range(cst_n*cst_alpha):
@@ -100,6 +106,8 @@ def createRandomM():
 def codeTrellis(H, x):
     return
 
+# Given an image (matrix) and the vector x and y
+# Return the stego image
 def createStegoImage(image, x, y):
     stegoImage = []
     differenceVector = []
