@@ -64,8 +64,17 @@ def createRandomM():
 def codeTrellis(H, x):
     return
 
-def createStegoImage(image, y):
-    return
+def createStegoImage(image, x, y):
+    stegoImage = []
+    differenceVector = []
+    for i in range(len(x)):
+        differenceVector.append(y[i] - x[i])
+    differenceMatrix = transformVectorToMatrix(differenceVector)
+    for i in range(len(image)):
+        stegoImage.append([])
+        for j in range(len(image[0])):
+            stegoImage[i].append(image[i][j] + differenceMatrix[i][j])
+    return stegoImage
 
 def showResult(image, stegoImage):
     return
