@@ -28,6 +28,14 @@ def transformMatrixToVector(matrix):
             vector.append(matrix[i][j])
     return vector
 
+def transformVectorToMatrix(vector):
+    matrix = []
+    for i in range(cst_n):
+        matrix.append([])
+        for j in range(cst_n):
+            matrix[i].append(vector[i*cst_n + j])
+    return matrix
+
 def leastSignificantBitOfNumber(number):
     return number%2
 
