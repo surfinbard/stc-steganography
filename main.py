@@ -152,6 +152,6 @@ v_m = createRandomM()
 ## Play
 
 v_x = createX(v_image)
-v_y = codeTrellis(v_H, v_x)
+v_y = symdromeTrellis(v_H, v_x)
 #v_stegoImage = createStegoImage(v_image, v_x, v_y)
 #showResult(v_image, v_stegoImage)
