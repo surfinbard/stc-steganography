@@ -88,10 +88,9 @@ def placeSubmatrixInMatrix(submatrix, matrix, i, j):
                 matrix[i+k][j+l] = submatrix[k][l]
     return matrix
 
-# Given [to complete]
+# Given a submatrix (matrix)
 # Return the matrix H
 def createH(subH):
-    h = len(subH)
     w = len(subH[0])
     H = []
     for i in range(cst_n*cst_alpha):
