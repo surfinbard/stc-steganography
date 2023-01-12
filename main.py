@@ -72,14 +72,14 @@ def showResult(image, stegoImage):
 
 ## Initialise Data
 
-image = createRandomImage()
-subH = createSubH()
-H = createH(subH)
-m = createRandomM()
+v_image = createRandomImage()
+v_subH = createSubH()
+v_H = createH(v_subH)
+v_m = createRandomM()
 
 ## Play
 
-x = createX(image)
-y = codeTrellis(H, x)
-stegoImage = createStegoImage(image, y)
-showResult(image, stegoImage)
+v_x = createX(v_image)
+v_y = codeTrellis(v_H, v_x)
+#v_stegoImage = createStegoImage(v_image, v_x, v_y)
+#showResult(v_image, v_stegoImage)
