@@ -32,7 +32,10 @@ def leastSignificantBitOfNumber(number):
     return number%2
 
 def leastSignificantBitForVector(vector):
-    return
+    result = []
+    for i in range(len(vector)):
+        result.append(leastSignificantBitOfNumber(vector[i]))
+    return result
 
 def createX(image):
     return leastSignificantBitForVector(transformMatrixToVector(image))
