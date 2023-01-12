@@ -1,10 +1,10 @@
 ## Constant
 
-n = 256
-grayLength = 256
-alpha = 0.1
-h = 4
-w = 10
+cst_n = 256
+cst_grayLength = 256
+cst_alpha = 0.1
+cst_h = 4
+cst_w = 10
 
 ## Function
 
