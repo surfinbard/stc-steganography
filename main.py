@@ -29,7 +29,7 @@ def transformMatrixToVector(matrix):
     return vector
 
 def leastSignificantBitOfNumber(number):
-    return
+    return number%2
 
 def leastSignificantBitForVector(vector):
     return
