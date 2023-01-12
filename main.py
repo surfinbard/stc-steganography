@@ -69,11 +69,24 @@ def createSubH():
     subH = [[1, 0], [1, 1]]
     return subH
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemented !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemented (not finished) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Given [to complete]
 # Return the matrix H
 def createH(subH):
-    return
+    h = len(subH)
+    w = len(subH[0])
+    H = []
+    for i in range(cst_n*cst_alpha):
+        H.append([])
+        for j in range(cst_n**2):
+            H[i].append(0)
+
+    for i in range(cst_n*cst_alpha):
+        for j in range(cst_n**2):
+            ()
+
+
+    return H
 
 def createRandomM():
     m = []
