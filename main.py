@@ -41,7 +41,8 @@ def createX(image):
     return leastSignificantBitForVector(transformMatrixToVector(image))
 
 def createSubH():
-    return
+    subH = [[1, 0], [1, 1]]
+    return subH
 
 def createH(subH):
     return
