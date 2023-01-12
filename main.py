@@ -113,7 +113,7 @@ def createRandomM():
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemented !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Given [to complete]
 # Return the vector y
-def codeTrellis(H, x):
+def symdromeTrellis(H, subH, x):
     return
 
 # Given an image (matrix) and the vector x and y
