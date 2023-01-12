@@ -77,7 +77,7 @@ def createSubH():
 # Given a submatrix (matrix), a matrix and two int i, j
 # Return the matrix with the submatrix place at position row i column j (the up left corner of the submatrix is at position row i column j). Ignore values that are supposed to be place out of bound of the matrix.
 # Note : Has side effect on the matrix
-def placeSubmatrixInMatrix(matrix, submatrix, i, j):
+def placeSubmatrixInMatrix(submatrix, matrix, i, j):
     h = len(submatrix)
     w = len(submatrix[0])
     H = len(matrix)
@@ -88,7 +88,6 @@ def placeSubmatrixInMatrix(matrix, submatrix, i, j):
                 matrix[i+k][j+l] = submatrix[k][l]
     return matrix
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemented (not finished) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Given [to complete]
 # Return the matrix H
 def createH(subH):
@@ -100,10 +99,8 @@ def createH(subH):
         for j in range(cst_n**2):
             H[i].append(0)
 
-    for i in range(cst_n*cst_alpha):
-        for j in range(cst_n**2):
-            ()
-
+    for b in range(len(H)):
+        H = placeSubmatrixInMatrix(subH, H, b, b*w)
 
     return H
 
