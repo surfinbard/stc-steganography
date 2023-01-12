@@ -130,6 +130,12 @@ def createStegoImage(image, x, y):
             stegoImage[i].append(image[i][j] + differenceMatrix[i][j])
     return stegoImage
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemeted !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Given an image (matrix) and his stego image (matrix)
+# Return the value of the distorsion beetween those two image
+def distorsion(image, stegoImage):
+    return
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!! Need to be implemented !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Given [to complete]
 # Return a visual representation of the final result
