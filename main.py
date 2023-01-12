@@ -22,7 +22,11 @@ def createRandomImage():
     return randomImage
 
 def transformMatrixToVector(matrix):
-    return
+    vector = []
+    for i in range(cst_n):
+        for j in range(cst_n):
+            vector.append(matrix[i][j])
+    return vector
 
 def leastSignificantBitOfNumber(number):
     return
