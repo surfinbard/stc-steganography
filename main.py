@@ -3,7 +3,7 @@ import array as arr
 import numpy as np
 
 # size of edges of x image
-edgeSize = 3  
+edgeSize = 3
 # 8bit grayscale pixel range
 pixelRange = 256
 # alpha = messageLength / edgeSize
@@ -35,6 +35,7 @@ def generateRandomMsg():
 def generateRandomImg():
     randomImage = []
     for i in range(edgeSize):
+        randomImage.append([])
         for j in range(edgeSize):
             randomImage[i].append((random.randint(0, pixelRange - 1)))
     return randomImage
@@ -107,17 +108,17 @@ def moveBetweenBlocks(i):
 def moveInsideBlocks(trellis, H):
     for i in range(subWidth):
         for j in range(len(trellis[i])):
-            if (node.data):  
+            if (node.data):
                 if (not node.weight):
                     node.weight = 0
-                state = bin(j)                    
+                state = bin(j)
                 node = trellis[i][j]
                 newState = state ^ getColumnForTrellis(i, H)
                 # 1 = horizontal edge
-                # 2 = different state 
+                # 2 = different state
                 nextNode1 = trellis[i+1][j]
                 nextNode2 = trellis[i][int(newState)]
-                
+
                 node.next1 = nextNode1
                 nextNode1.prev1 = node
                 setWeight(nextNode1, i+1)
@@ -132,7 +133,7 @@ def removeEdge(node, prev, prevNext):
 
 def setWeight(node, index):
     if(x[index + 1] == 0):
-        if(node.prev1 and node.prev2):            
+        if(node.prev1 and node.prev2):
             node.weight = min(node.prev1.weight, node.prev2.weight + 1)
             # removing heavier edge:
             if (node.prev1.weight == node.weight):
