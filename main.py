@@ -2,7 +2,7 @@ import random
 import array as arr
 import numpy as np
 
-# size of edges of cover image
+# size of edges of x image
 edgeSize = 3  
 # 8bit grayscale pixel range
 pixelRange = 256
@@ -11,6 +11,8 @@ alpha = 1  # 0.1
 # size of the subMatrix
 subHeight = 2
 subWidth = 2
+
+# todo: set .data instead of directly into array cells
 
 # Returns empty matrix H
 def generateH():
@@ -85,12 +87,15 @@ def syndromeTrellis(H, subH, x):
     return
 
 def getColumnForTrellis(index, H):
+    # todo: check if direction is supposed to be inversed at every x bit
     transposedH = np.transpose(H)
     if index % 2 == 0:
         return transposedH[index]
     else:
         return arr.reversed(transposedH[index])
 
+# todo: set states instead of returning ints
+# 0 in, LSB out (LSB = mi)
 def moveBetweenBlocks(i):
     if (i == (0 or 1)):
         return 0
@@ -101,21 +106,51 @@ def moveInsideBlocks(trellis, H):
     for i in range(subWidth):
         for j in range(len(trellis[i])):
             if (node.data):  
-                state = bin(j)    
+                if (not node.weight):
+                    node.weight = 0
+                state = bin(j)                    
                 node = trellis[i][j]
+                newState = state ^ getColumnForTrellis(i, H)
+                # 1 = horizontal edge
+                # 2 = different state 
                 nextNode1 = trellis[i+1][j]
+                nextNode2 = trellis[i][int(newState)]
                 
                 node.next1 = nextNode1
                 nextNode1.prev1 = node
+                setWeight(nextNode1, i+1)
 
-                node.next2 = state ^ getColumnForTrellis(i, H)
+                node.next2 = nextNode2
+                nextNode2.prev2 = node
+                setWeight(nextNode2, i+1)
 
-def getWeight(anything):
-    return
+
+def setWeight(node, index):
+    if(x[index + 1] == 0):
+        if(node.prev1 and node.prev2):
+            node.weight = min(node.prev1.weight, node.prev2.weight + 1)
+            return
+        if(node.prev1):
+            node.weight = node.prev1.weight
+            return
+        if(node.prev2):
+            node.weight = node.prev2.weight + 1
+            return
+    if(x[index + 1] == 1):
+        if(node.prev1 and node.prev2):
+            node.weight = min(node.prev1.weight + 1, node.prev2.weight)
+            return
+        if(node.prev1):
+            node.weight = node.prev1.weight + 1
+            return
+        if(node.prev2):
+            node.weight = node.prev2.weight
+            return
 
 def viterbi(trellis):
     return
 
+# todo: check
 def getStegoImage(image, x, y):
     stegoImage = []
     differenceVector = []
@@ -153,7 +188,7 @@ if __name__ == '__main__':
     message = generateRandomMsg()
 
     ## Run
-    cover = imgToLSBVector(randomImg)
-    optimalY = syndromeTrellis(H, cover)
-    # v_stegoImage = getStegoImage(randomImg, cover, optimalY)
+    x = imgToLSBVector(randomImg)
+    optimalY = syndromeTrellis(H, x)
+    # v_stegoImage = getStegoImage(randomImg, x, optimalY)
     # showResult(randomImg, v_stegoImage)
