@@ -30,7 +30,10 @@ def generateSubH():
 
 # Generates message
 def generateRandomMsg():
-    return random.randint(range(edgeSize * alpha))
+    message = []
+    for i in range(edgeSize * alpha):
+        message.append(random.randint(0, 1))
+    return message
 
 def generateRandomImg():
     randomImage = []
