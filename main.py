@@ -44,15 +44,17 @@ def generateRandomImg():
     return randomImage
 
 def fillH(H, subH):
-    matrixHeight = len(H[0])
+    matrixHeight = len(H)
+    matrixWidth = len(H[0])
     # all height indexes will be used but not all width indexes, hence j on the outside (easier)
-    for j in range(matrixHeight):
-        for i in range(len(H)):
-            if (i % subWidth == 0):
+    for i in range(matrixHeight):
+        for j in range(matrixWidth):
+            if ((i == j / subWidth) & (j % subWidth == 0)):
                 # placing subH inside H, item by item
                 for x in range(subWidth):
                     for y in range(subHeight):
-                        H[i][j] = subH[x][y]
+                        if((i + x < matrixHeight) & (j + y < matrixWidth)):
+                            H[i + x][j + y] = subH[x][y]
 
 # Outputs matrix in vector format
 def matrixToVector(matrix):
