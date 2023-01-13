@@ -162,7 +162,18 @@ def setWeight(node, index):
             node.weight = node.prev2.weight
             return
 
+def setState():
+    return
+
 def viterbi(trellis):
+    transposedTrellis = np.transpose(trellis)
+    lastColumn = transposedTrellis[-1,:]
+    optimalEdge = min(lastColumn)
+
+    # walk through trellis backwards, skip bridges between blocks, node.prev1 => node.y = 0 | node.prev2 => node.y = 1 (all newfound bits appended at index 0)
+    for column in range(len(trellis[0])):
+        return
+
     return
 
 # todo: check
