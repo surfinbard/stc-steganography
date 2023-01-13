@@ -221,6 +221,6 @@ if __name__ == '__main__':
 
     ## Run
     x = imgToLSBVector(randomImg)
-    optimalY = syndromeTrellis(H, x)
+    optimalY = syndromeTrellis(H, subH, x)
     # v_stegoImage = getStegoImage(randomImg, x, optimalY)
     # showResult(randomImg, v_stegoImage)
