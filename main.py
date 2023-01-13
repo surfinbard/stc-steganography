@@ -84,6 +84,8 @@ def imgToLSBVector(image):
 
 # Returns optimal y after trellis construction
 def syndromeTrellis(H, subH, x):
+
+
     return
 
 def getColumnForTrellis(index, H):
@@ -124,11 +126,19 @@ def moveInsideBlocks(trellis, H):
                 nextNode2.prev2 = node
                 setWeight(nextNode2, i+1)
 
+def removeEdge(node, prev, prevNext):
+    node[prev] = None
+    node[prev][prevNext] = None
 
 def setWeight(node, index):
     if(x[index + 1] == 0):
-        if(node.prev1 and node.prev2):
+        if(node.prev1 and node.prev2):            
             node.weight = min(node.prev1.weight, node.prev2.weight + 1)
+            # removing heavier edge:
+            if (node.prev1.weight == node.weight):
+                removeEdge(node, 'prev2', 'next2')
+            if (node.prev2.weight == node.weight):
+                removeEdge(node, 'prev1', 'next1')
             return
         if(node.prev1):
             node.weight = node.prev1.weight
@@ -139,6 +149,11 @@ def setWeight(node, index):
     if(x[index + 1] == 1):
         if(node.prev1 and node.prev2):
             node.weight = min(node.prev1.weight + 1, node.prev2.weight)
+            # removing heavier edge:
+            if (node.prev1.weight == node.weight):
+                removeEdge(node, 'prev2', 'next2')
+            if (node.prev2.weight == node.weight):
+                removeEdge(node, 'prev1', 'next1')
             return
         if(node.prev1):
             node.weight = node.prev1.weight + 1
