@@ -20,7 +20,7 @@ def generateH():
     for i in range(edgeSize * alpha):
         H.append([])
         for j in range(edgeSize ** 2):
-            H[i][j] = None
+            H[i].append(None)
     return H
 
 # Returns subMatrix
