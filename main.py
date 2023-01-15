@@ -94,14 +94,9 @@ def syndromeTrellis(H, subH, x):
 
     return
 
-def getColumnForTrellis(index, H):
-    # todo: check if direction is supposed to be inversed at every x bit
-    transposedH = np.transpose(H)
-    if index % 2 == 0:
-        return transposedH[index]
-    else:
-        return arr.reversed(transposedH[index])
-
+def getColumnForTrellis(H):
+    return np.transpose(H)
+    
 # todo: set states instead of returning ints
 # 0 in, LSB out (LSB = mi)
 def moveBetweenBlocks(i):
@@ -118,7 +113,7 @@ def moveInsideBlocks(trellis, H):
                     node.weight = 0
                 state = bin(j)
                 node = trellis[i][j]
-                newState = state ^ getColumnForTrellis(i, H)
+                newState = state ^ getColumnForTrellis(H)
                 # 1 = horizontal edge
                 # 2 = different state
                 nextNode1 = trellis[i+1][j]
@@ -208,7 +203,6 @@ def totalDistortion(image, stegoImage):
 # Outputs visual representation of the final result
 def showResult(image, stegoImage):
     return
-
 
 if __name__ == '__main__':
 
