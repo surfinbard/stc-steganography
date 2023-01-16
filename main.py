@@ -3,7 +3,7 @@ import array as arr
 import numpy as np
 
 # size of edges of x image
-edgeSize = 3
+edgeSize = 2
 # 8bit grayscale pixel range
 pixelRange = 256
 # alpha = messageLength / edgeSize
@@ -224,7 +224,7 @@ def forwardTrellis(H, subH, x, message, trellisMatrix):
     for j in range(len(H[0])):
         columnH = getColumnH(j)
         forwardTrellisStep(trellisMatrix, H, subH, x, message, j, columnH)
-        if((j+1)%subWidth == 0):
+        if(((j+1)%subWidth == 0) | (j == len(H[0])-1)):
             endBlock(trellisMatrix, H, subH, x, message, j+1)
     return trellisMatrix
 
@@ -261,7 +261,8 @@ def endBlock(trellisMatrix, H, subH, x, message, j):
                 trellisMatrix[i][j][3] = False
             else:
                 trellisMatrix[i//2][j] = trellisMatrix[i][j]
-
+                if(i//2 != i):
+                    trellisMatrix[i][j] = None
     return
 
 def backwardTrellis(trellisMatrix):
@@ -276,7 +277,7 @@ def backwardTrellis(trellisMatrix):
             optimalPathEnd = i
     print(optimalPathEnd)
     y = []
-    previousState = trellisMatrix[optimalPathEnd][len(H[0])][0]
+    previousState = optimalPathEnd
     for j in range(len(H[0]), 0, -1):
         y.append(trellisMatrix[previousState][j][1])
         previousState = trellisMatrix[previousState][j][0]
@@ -294,8 +295,8 @@ def test(H, subH, x, message):
     print("x =", x)
     print("y =", y)
     replaceNoneByZero(H)
-    print("message =", message)
     print("H =", H)
+    print("message =", message)
     print("H*y =", np.mod(np.dot(H, y), 2))
     return
 
@@ -306,7 +307,6 @@ def replaceNoneByZero(H):
                 H[i][j] = 0
     return
 
-#test(H, subH, x, message)
 ### end test
 
 if __name__ == '__main__':
@@ -323,3 +323,4 @@ if __name__ == '__main__':
     optimalY = syndromeTrellis(H, subH, x)
     # v_stegoImage = getStegoImage(randomImg, x, optimalY)
     # showResult(randomImg, v_stegoImage)
+    test(H, subH, x, message)
