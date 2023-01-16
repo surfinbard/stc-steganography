@@ -3,7 +3,7 @@ import array as arr
 import numpy as np
 
 # size of edges of x image
-edgeSize = 2
+edgeSize = 3
 # 8bit grayscale pixel range
 pixelRange = 256
 # alpha = messageLength / edgeSize
@@ -215,7 +215,6 @@ def trellis(H, subH, x, message):
         for j in range(len(H[0]) + 1):
             trellisMatrix[i].append(None)
     forwardTrellis(H, subH, x, message, trellisMatrix)
-    print(trellisMatrix)
     y = backwardTrellis(trellisMatrix)
     return y
 
@@ -257,12 +256,13 @@ def forwardTrellisStep(trellisMatrix, H, currentSubH, x, message, j, columnH):
 def endBlock(trellisMatrix, H, subH, x, message, j):
     for i in range(subHeight ** 2):
         if(trellisMatrix[i][j] != None):
-            if(i%2 != message[j//subWidth - 1]):
-                trellisMatrix[i][j][3] = False
-            else:
-                trellisMatrix[i//2][j] = trellisMatrix[i][j]
-                if(i//2 != i):
-                    trellisMatrix[i][j] = None
+            if(j//subWidth - 1 < len(message)):
+                if(i%2 != message[j//subWidth - 1]):
+                    trellisMatrix[i][j][3] = False
+                else:
+                    trellisMatrix[i//2][j] = trellisMatrix[i][j]
+                    if(i//2 != i):
+                        trellisMatrix[i][j] = None
     return
 
 def backwardTrellis(trellisMatrix):
@@ -275,7 +275,6 @@ def backwardTrellis(trellisMatrix):
     for i in pathEnds:
         if(trellisMatrix[optimalPathEnd][len(H[0])][2] > trellisMatrix[i][len(H[0])][2]):
             optimalPathEnd = i
-    print(optimalPathEnd)
     y = []
     previousState = optimalPathEnd
     for j in range(len(H[0]), 0, -1):
