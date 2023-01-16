@@ -195,7 +195,7 @@ def getStegoImage(image, x, y):
 def totalDistortion(image, stegoImage):
     sum = 0
     for i in range(len(image)):
-        for j in range(image[j]):
+        for j in range(len(image[0])):
             if (image[i][j] != stegoImage[i][j]):
                 sum += 1
     return sum
@@ -322,4 +322,4 @@ if __name__ == '__main__':
     optimalY = syndromeTrellis(H, subH, x)
     # v_stegoImage = getStegoImage(randomImg, x, optimalY)
     # showResult(randomImg, v_stegoImage)
-    test(H, subH, x, message)
+    #test(H, subH, x, message)
