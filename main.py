@@ -204,11 +204,11 @@ def totalDistortion(image, stegoImage):
 def showResult(image, stegoImage):
     return
 
-### test
+### Ugly trellis
 
 import math
 
-def trellis(H, subH, x, message):
+def uglyTrellis(H, subH, x, message):
     trellisMatrix = []
     for i in range(subHeight ** 2):
         trellisMatrix.append([])
@@ -289,8 +289,8 @@ def bitToNumber(bitList):
         sum += bitList[i] * (2 ** i)
     return sum
 
-def test(H, subH, x, message):
-    y = trellis(H, subH, x, message)
+def testUglyTrellis(H, subH, x, message):
+    y = uglyTrellis(H, subH, x, message)
     print("x =", x)
     print("y =", y)
     replaceNoneByZero(H)
@@ -306,7 +306,7 @@ def replaceNoneByZero(H):
                 H[i][j] = 0
     return
 
-### end test
+### end ugly trellis
 
 if __name__ == '__main__':
 
@@ -322,4 +322,4 @@ if __name__ == '__main__':
     optimalY = syndromeTrellis(H, subH, x)
     # v_stegoImage = getStegoImage(randomImg, x, optimalY)
     # showResult(randomImg, v_stegoImage)
-    #test(H, subH, x, message)
+    # testUglyTrellis(H, subH, x, message)
