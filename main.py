@@ -96,7 +96,7 @@ def syndromeTrellis(H, subH, x):
 
 def getColumnForTrellis(H):
     return np.transpose(H)
-    
+
 # todo: set states instead of returning ints
 # 0 in, LSB out (LSB = mi)
 def moveBetweenBlocks(i):
@@ -203,6 +203,111 @@ def totalDistortion(image, stegoImage):
 # Outputs visual representation of the final result
 def showResult(image, stegoImage):
     return
+
+### test
+
+import math
+
+def trellis(H, subH, x, message):
+    trellisMatrix = []
+    for i in range(subHeight ** 2):
+        trellisMatrix.append([])
+        for j in range(len(H[0]) + 1):
+            trellisMatrix[i].append(None)
+    forwardTrellis(H, subH, x, message, trellisMatrix)
+    print(trellisMatrix)
+    y = backwardTrellis(trellisMatrix)
+    return y
+
+def forwardTrellis(H, subH, x, message, trellisMatrix):
+    trellisMatrix[0][0] = [None, None, 0, True] # [previousState, bitValue, weightSum, continuePath]
+    for j in range(len(H[0])):
+        columnH = getColumnH(j)
+        forwardTrellisStep(trellisMatrix, H, subH, x, message, j, columnH)
+        if((j+1)%subWidth == 0):
+            endBlock(trellisMatrix, H, subH, x, message, j+1)
+    return trellisMatrix
+
+def getColumnH(j):
+    columnH = []
+    for i in range(subHeight):
+        if(j//subWidth + i < len(H)):
+            columnH.append(H[j//subWidth + i][j])
+        else:
+            columnH.append(0)
+    return columnH
+
+
+def forwardTrellisStep(trellisMatrix, H, currentSubH, x, message, j, columnH):
+    yProduct = []
+    yProduct.append(bitToNumber(np.dot(columnH, 0)))
+    yProduct.append(bitToNumber(np.dot(columnH, 1)))
+    weight = [abs(x[j] - 0), abs(x[j] - 1)]
+    for i in range(subHeight ** 2):
+        if(trellisMatrix[i][j] != None):
+            if(trellisMatrix[i][j][3]):
+                for k in range(2):
+                    if(trellisMatrix[i ^ yProduct[k]][j+1] != None):
+                        if(trellisMatrix[i ^ yProduct[k]][j+1][2] > trellisMatrix[i][j][2] + weight[k]):
+                            trellisMatrix[i ^ yProduct[k]][j+1] = [i, k, trellisMatrix[i][j][2] + weight[k], True]
+                    else:
+                        trellisMatrix[i ^ yProduct[k]][j+1] = [i, k, trellisMatrix[i][j][2] + weight[k], True]
+    return trellisMatrix
+
+def endBlock(trellisMatrix, H, subH, x, message, j):
+    for i in range(subHeight ** 2):
+        if(trellisMatrix[i][j] != None):
+            if(i%2 != message[j//subWidth - 1]):
+                trellisMatrix[i][j][3] = False
+            else:
+                trellisMatrix[i//2][j] = trellisMatrix[i][j]
+
+    return
+
+def backwardTrellis(trellisMatrix):
+    pathEnds = []
+    for i in range(subHeight ** 2):
+        if(trellisMatrix[i][len(H[0])] != None):
+            if(trellisMatrix[i][len(H[0])][3]):
+                pathEnds.append(i)
+    optimalPathEnd = pathEnds[0]
+    for i in pathEnds:
+        if(trellisMatrix[optimalPathEnd][len(H[0])][2] > trellisMatrix[i][len(H[0])][2]):
+            optimalPathEnd = i
+    print(optimalPathEnd)
+    y = []
+    previousState = trellisMatrix[optimalPathEnd][len(H[0])][0]
+    for j in range(len(H[0]), 0, -1):
+        y.append(trellisMatrix[previousState][j][1])
+        previousState = trellisMatrix[previousState][j][0]
+    y.reverse()
+    return y
+
+def bitToNumber(bitList):
+    sum = 0
+    for i in range(len(bitList)):
+        sum += bitList[i] * (2 ** i)
+    return sum
+
+def test(H, subH, x, message):
+    y = trellis(H, subH, x, message)
+    print("x =", x)
+    print("y =", y)
+    replaceNoneByZero(H)
+    print("message =", message)
+    print("H =", H)
+    print("H*y =", np.mod(np.dot(H, y), 2))
+    return
+
+def replaceNoneByZero(H):
+    for i in range(len(H)):
+        for j in range(len(H[0])):
+            if(H[i][j] == None):
+                H[i][j] = 0
+    return
+
+#test(H, subH, x, message)
+### end test
 
 if __name__ == '__main__':
 
