@@ -197,6 +197,8 @@ def totalDistortion(pixels, stegoPixels):
 
 # Outputs visual representation of the final result
 def showResult(image, stegoImage):
+    showImage(image)
+    showImage(stegoImage)
     return
 
 ### Ugly trellis
