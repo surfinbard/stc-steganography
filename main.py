@@ -79,9 +79,9 @@ def LSBVector(vector):
         result.append(getLSB(vector[i]))
     return result
 
-# Converts image to LSB vector
-def imgToLSBVector(image):
-    return LSBVector(matrixToVector(image))
+# Converts pixels to LSB vector
+def pixelsToLSBVector(pixels):
+    return LSBVector(matrixToVector(pixels))
 
 # Returns optimal y after trellis construction
 def syndromeTrellis(H, subH, x):
@@ -173,25 +173,25 @@ def viterbi(trellis):
     return
 
 # todo: check
-def getStegoImage(image, x, y):
-    stegoImage = []
+def getStegoPixels(pixels, x, y):
+    stegoPixels = []
     differenceVector = []
 
     for i in range(len(x)):
         differenceVector.append(y[i] - x[i])
     differenceMatrix = vectorToMatrix(differenceVector)
 
-    for i in range(len(image)):
-        stegoImage.append([])
-        for j in range(len(image[0])):
-            stegoImage[i].append(image[i][j] + differenceMatrix[i][j])
-    return stegoImage
+    for i in range(len(pixels)):
+        stegoPixels.append([])
+        for j in range(len(pixels[0])):
+            stegoPixels[i].append(pixels[i][j] + differenceMatrix[i][j])
+    return stegoPixels
 
-def totalDistortion(image, stegoImage):
+def totalDistortion(pixels, stegoPixels):
     sum = 0
-    for i in range(len(image)):
-        for j in range(len(image[0])):
-            if (image[i][j] != stegoImage[i][j]):
+    for i in range(len(pixels)):
+        for j in range(len(pixels[0])):
+            if (pixels[i][j] != stegoPixels[i][j]):
                 sum += 1
     return sum
 
@@ -337,8 +337,9 @@ if __name__ == '__main__':
     message = generateRandomMsg()
 
     ## Run
-    x = imgToLSBVector(pixels)
+    x = pixelsToLSBVector(pixels)
     optimalY = syndromeTrellis(H, subH, x)
-    # v_stegoImage = getStegoImage(pixels, x, optimalY)
-    # showResult(image, v_stegoImage)
+    # stegoPixels = getStegoPixels(pixels, x, optimalY)
+    # stegoImage = createImageFromPixels(stegoPixels)
+    # showResult(image, stegoImage)
     # testUglyTrellis(H, subH, x, message)
