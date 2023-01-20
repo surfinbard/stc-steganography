@@ -12,6 +12,9 @@ alpha = 1  # 0.1
 subHeight = 2
 subWidth = 2
 
+randomImg = True
+path = "Path to complete"
+
 # todo: set .data instead of directly into array cells
 
 # Returns empty matrix H
@@ -34,14 +37,6 @@ def generateRandomMsg():
     for i in range(edgeSize * alpha):
         message.append(random.randint(0, 1))
     return message
-
-def generateRandomImg():
-    randomImage = []
-    for i in range(edgeSize):
-        randomImage.append([])
-        for j in range(edgeSize):
-            randomImage[i].append((random.randint(0, pixelRange - 1)))
-    return randomImage
 
 def fillH(H, subH):
     matrixHeight = len(H)
@@ -84,9 +79,9 @@ def LSBVector(vector):
         result.append(getLSB(vector[i]))
     return result
 
-# Converts image to LSB vector
-def imgToLSBVector(image):
-    return LSBVector(matrixToVector(image))
+# Converts pixels to LSB vector
+def pixelsToLSBVector(pixels):
+    return LSBVector(matrixToVector(pixels))
 
 # Returns optimal y after trellis construction
 def syndromeTrellis(H, subH, x):
@@ -178,30 +173,32 @@ def viterbi(trellis):
     return
 
 # todo: check
-def getStegoImage(image, x, y):
-    stegoImage = []
+def getStegoPixels(pixels, x, y):
+    stegoPixels = []
     differenceVector = []
 
     for i in range(len(x)):
         differenceVector.append(y[i] - x[i])
     differenceMatrix = vectorToMatrix(differenceVector)
 
-    for i in range(len(image)):
-        stegoImage.append([])
-        for j in range(len(image[0])):
-            stegoImage[i].append(image[i][j] + differenceMatrix[i][j])
-    return stegoImage
+    for i in range(len(pixels)):
+        stegoPixels.append([])
+        for j in range(len(pixels[0])):
+            stegoPixels[i].append(pixels[i][j] + differenceMatrix[i][j])
+    return stegoPixels
 
-def totalDistortion(image, stegoImage):
+def totalDistortion(pixels, stegoPixels):
     sum = 0
-    for i in range(len(image)):
-        for j in range(len(image[0])):
-            if (image[i][j] != stegoImage[i][j]):
+    for i in range(len(pixels)):
+        for j in range(len(pixels[0])):
+            if (pixels[i][j] != stegoPixels[i][j]):
                 sum += 1
     return sum
 
 # Outputs visual representation of the final result
 def showResult(image, stegoImage):
+    showImage(image)
+    showImage(stegoImage)
     return
 
 ### Ugly trellis
@@ -308,18 +305,43 @@ def replaceNoneByZero(H):
 
 ### end ugly trellis
 
+## Image
+
+from PIL import Image
+
+def openImage(path):
+    return Image.open(path).convert('L')
+
+def getPixels(image):
+    return np.asarray(image)
+
+def showImage(image):
+    image.show()
+
+def createImageFromPixels(pixels):
+    return Image.fromarray(pixels, 'L')
+
+def generateRandomImg():
+    pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
+    return Image.fromarray(pixels)
+
 if __name__ == '__main__':
 
     ## Initialize data
-    randomImg = generateRandomImg()
+    if(not randomImg):
+        image = openImage(path)
+    else :
+        image = generateRandomImg()
+    pixels = getPixels(image)
     subH = generateSubH()
     H = generateH()
     fillH(H, subH)
     message = generateRandomMsg()
 
     ## Run
-    x = imgToLSBVector(randomImg)
+    x = pixelsToLSBVector(pixels)
     optimalY = syndromeTrellis(H, subH, x)
-    # v_stegoImage = getStegoImage(randomImg, x, optimalY)
-    # showResult(randomImg, v_stegoImage)
+    # stegoPixels = getStegoPixels(pixels, x, optimalY)
+    # stegoImage = createImageFromPixels(stegoPixels)
+    # showResult(image, stegoImage)
     # testUglyTrellis(H, subH, x, message)
