@@ -355,6 +355,13 @@ def generateRandomSubH(subHeight, subWidth):
 def calculateEfficiency(pixelsNumber, alpha, distortion):
     return pixelsNumber * alpha / distortion
 
+def generateMultipleRandomMsg(pixelsNumber, alpha, messagesNumber):
+    messageLength = pixelsNumber * alpha
+    messages = np.empty((messagesNumber, messageLength), 'uint8')
+    for i in range(messagesNumber):
+        messages[i] = generateRandomMsg()
+    return messages
+
 def getAverageEfficiency(x, H, subH, messages, edgeSize):
     efficiencies = np.zeros(iterationNumber)
     iterationNumber = len(messages)
