@@ -341,8 +341,23 @@ def generateRandomImg():
 
 ## Best H seeker
 
-def foundBestH():
-    return
+def foundBestH(edgeSize, alpha, subHeight, subWidth, iterationNumber, messagesNumber, path = ()):
+    if(path):
+        image = openImage(path)
+    else:
+        image = generateRandomImg()
+    pixels = getPixels(image)
+    x = pixelsToLSBVector(pixels)
+    messageLength = len(pixels) * alpha
+    messages = generateMultipleRandomMsg(messageLength, messagesNumber)
+    subHs = np.empty((iterationNumber, subHeight, subWidth), "uint8")
+    averagesEfficiency = np.empty(iterationNumber)
+    for i in range(iterationNumber):
+        subH = generateRandomSubH(subHeight, subWidth)
+        subHs[i] = subH
+        H = createH(subH)
+        averagesEfficiency[i] = getAverageEfficiency(x, H, subH, messages, edgeSize)
+    return subHs[np.argmax(averagesEfficiency)], np.argmax(averagesEfficiency)
 
 def generateRandomSubH(subHeight, subWidth):
     subH = np.random.randint(0, 2, (subHeight, subWidth), "uint8")
