@@ -41,13 +41,15 @@ def generateRandomMsg():
 def fillH(H, subH):
     matrixHeight = len(H)
     matrixWidth = len(H[0])
+    subHeight = len(subH)
+    subWidth = len(subH[0])
     # all height indexes will be used but not all width indexes, hence j on the outside (easier)
     for i in range(matrixHeight):
         for j in range(matrixWidth):
             if ((i == j / subWidth) & (j % subWidth == 0)):
                 # placing subH inside H, item by item
-                for x in range(subWidth):
-                    for y in range(subHeight):
+                for x in range(subHeight):
+                    for y in range(subWidth):
                         if((i + x < matrixHeight) & (j + y < matrixWidth)):
                             H[i + x][j + y] = subH[x][y]
 
