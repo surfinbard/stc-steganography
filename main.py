@@ -352,8 +352,19 @@ def generateRandomSubH(subHeight, subWidth):
         subH[subHeight - 1][np.random.randint(subWidth)] = 1
     return subH
 
-def calculateEfficiency(edgeSize, alpha, distortion):
-    return edgeSize * alpha / distortion
+def calculateEfficiency(pixelsNumber, alpha, distortion):
+    return pixelsNumber * alpha / distortion
+
+def getAverageEfficiency(x, H, subH, messages, edgeSize):
+    efficiencies = np.zeros(iterationNumber)
+    iterationNumber = len(messages)
+    for i in range(iterationNumber):
+        message = messages[i]
+        y = uglyTrellis(H, subH, x, message)
+        distortion = totalDistortionFromVector(x, y)
+        efficiencies[i] = calculateEfficiency(edgeSize ** 2, alpha, distortion)
+    averageEfficiency = np.mean(efficiencies)
+    return averageEfficiency
 
 if __name__ == '__main__':
 
