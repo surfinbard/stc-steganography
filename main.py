@@ -32,9 +32,9 @@ def generateSubH():
     return subH
 
 # Generates message
-def generateRandomMsg():
+def generateRandomMsg(messageLength):
     message = []
-    for i in range(edgeSize * alpha):
+    for i in range(messageLength):
         message.append(random.randint(0, 1))
     return message
 
@@ -359,7 +359,7 @@ def generateMultipleRandomMsg(pixelsNumber, alpha, messagesNumber):
     messageLength = pixelsNumber * alpha
     messages = np.empty((messagesNumber, messageLength), 'uint8')
     for i in range(messagesNumber):
-        messages[i] = generateRandomMsg()
+        messages[i] = generateRandomMsg(messageLength)
     return messages
 
 def getAverageEfficiency(x, H, subH, messages, edgeSize):
@@ -384,7 +384,7 @@ if __name__ == '__main__':
     subH = generateSubH()
     H = generateH()
     fillH(H, subH)
-    message = generateRandomMsg()
+    message = generateRandomMsg(edgeSize * alpha)
 
     ## Run
     x = pixelsToLSBVector(pixels)
