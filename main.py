@@ -362,9 +362,9 @@ def generateMultipleRandomMsg(messageLength, messagesNumber):
     return messages
 
 def getAverageEfficiency(x, H, subH, messages, edgeSize):
-    efficiencies = np.zeros(iterationNumber)
-    iterationNumber = len(messages)
-    for i in range(iterationNumber):
+    messagesNumber = len(messages)
+    efficiencies = np.zeros(messagesNumber)
+    for i in range(messagesNumber):
         message = messages[i]
         y = uglyTrellis(H, subH, x, message)
         distortion = totalDistortionFromVector(x, y)
