@@ -345,6 +345,9 @@ def generateRandomSubH(subHeight, subWidth):
         subH[subHeight - 1][np.random.randint(subWidth)] = 1
     return subH
 
+def calculateEfficiency(edgeSize, alpha, distortion):
+    return edgeSize * alpha / distortion
+
 if __name__ == '__main__':
 
     ## Initialize data
