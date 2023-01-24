@@ -51,6 +51,11 @@ def fillH(H, subH):
                         if((i + x < matrixHeight) & (j + y < matrixWidth)):
                             H[i + x][j + y] = subH[x][y]
 
+def createH(subH):
+    H = generateH()
+    fillH(H, subH)
+    return H
+
 # Outputs matrix in vector format
 def matrixToVector(matrix):
     vector = []
