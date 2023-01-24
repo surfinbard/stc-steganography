@@ -325,6 +325,19 @@ def generateRandomImg():
     pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
     return Image.fromarray(pixels)
 
+## Best H seeker
+
+def foundBestH():
+    return
+
+def generateRandomSubH(subHeight, subWidth):
+    subH = np.random.randint(0, 2, (subHeight, subWidth), "uint8")
+    if(not np.isin(1, subH[0])):
+        subH[0][np.random.randint(subWidth)] = 1
+    if(not np.isin(1, subH[subHeight - 1])):
+        subH[subHeight - 1][np.random.randint(subWidth)] = 1
+    return subH
+
 if __name__ == '__main__':
 
     ## Initialize data
