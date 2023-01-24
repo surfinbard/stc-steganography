@@ -194,12 +194,19 @@ def getStegoPixels(pixels, x, y):
             stegoPixels[i].append(pixels[i][j] + differenceMatrix[i][j])
     return stegoPixels
 
-def totalDistortion(pixels, stegoPixels):
+def totalDistortionFromMatrix(pixels, stegoPixels):
     sum = 0
     for i in range(len(pixels)):
         for j in range(len(pixels[0])):
             if (pixels[i][j] != stegoPixels[i][j]):
                 sum += 1
+    return sum
+
+def totalDistortionFromVector(x, y):
+    sum = 0
+    for i in range(len(x)):
+        if (x[i] != y[i]):
+            sum += 1
     return sum
 
 # Outputs visual representation of the final result
