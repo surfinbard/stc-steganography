@@ -232,13 +232,13 @@ def uglyTrellis(H, subH, x, message):
 def forwardTrellis(H, subH, x, message, trellisMatrix):
     trellisMatrix[0][0] = [None, None, 0, True] # [previousState, bitValue, weightSum, continuePath]
     for j in range(len(H[0])):
-        columnH = getColumnH(j)
+        columnH = getColumnH(H, j)
         forwardTrellisStep(trellisMatrix, H, subH, x, message, j, columnH)
         if(((j+1)%subWidth == 0) | (j == len(H[0])-1)):
             endBlock(trellisMatrix, H, subH, x, message, j+1)
     return trellisMatrix
 
-def getColumnH(j):
+def getColumnH(H, j):
     columnH = []
     for i in range(subHeight):
         if(j//subWidth + i < len(H)):
