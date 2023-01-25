@@ -357,7 +357,7 @@ def foundBestH(edgeSize, alpha, subHeight, subWidth, iterationNumber, messagesNu
         subHs[i] = subH
         H = createH(subH)
         averagesEfficiency[i] = getAverageEfficiency(x, H, subH, messages, edgeSize)
-    return subHs[np.argmax(averagesEfficiency)], np.argmax(averagesEfficiency)
+    return subHs[np.argmax(averagesEfficiency)]
 
 def generateRandomSubH(subHeight, subWidth):
     subH = np.random.randint(0, 2, (subHeight, subWidth), "uint8")
