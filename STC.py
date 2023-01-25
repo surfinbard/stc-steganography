@@ -1,234 +1,205 @@
 import numpy as np
-from treelib import Node, Tree
+import matplotlib.pyplot as plt
+from PIL import Image
+from ete3 import Tree
 
-# currstate muda a cada pulo
+def select_img():
+    while True:
+        cover_number = strict_integer_input("\nSelect image as cover [1-10]:")
+        if (cover_number > 10):
+            print("\nUp to 10 only!")
+        else:
+            break
+    path = './' + str(cover_number) + '.pgm'
+    img_to_lsb(path)
+
+def img_to_lsb(path):
+    img = Image.open(path).convert('L')
+    pixel_vector = np.asarray(img).flatten()
+
+    for i in range(len(pixel_vector)):
+        pixel_vector[i] %= 2
+    return pixel_vector
     
-# todo: check how H dimensions should be defined
-# todo: remove camelCase
-# todo: remove all unneccessary global vars
+def get_lsb(value):
+    return value % 2
 
-# trellis will be a graph made of nodes, like so:
-class node:
-    def __init__(self, state, value, y_bit):
-        self.state = state
-        self.value = value
-        self.y_bit = y_bit
-        self.prev_1 = None
-        self.prev_2 = None
-        self.next_1 = None
-        self.next_2 = None
+# maybe if this returns a string it can be used for the trellis fix. check
+def get_states(sub_height):
+    states = []
+    for i in range(2 ** sub_height):
+        b = format(i, 'b')
+        b = str(0) * (sub_height - len(b)) + b
+        states.append(b)
+    return states
 
-y = []
-h = []
-sub_h = []
-cover = []
-message = []
-curr_state = 0
+def get_h(sub_h, payload_size, message_size):
 
-# i refers to current message index 
-i = 0
-# col refers to indexes of current cover, y, H and trellis columns 
-col = 0
-
-# empty trellis
-def generate_trellis(sub_width, sub_height):
-    for item in range(len(message)):
-        get_block(sub_width, sub_height)
-
-def get_block(sub_width, sub_height):
-    block = []
-
-    # adding h^2 rows to block 
-    for item in range(sub_height ** 2):
-        block.append([])
-    
-    # adding w+1 columns to block, with nodes containing only state values
-    for row in range(len(block)):
-        for column in range(sub_width + 1):
-            block[row][column] = node(row, None, None, None, None, None, None)
-
-    return block   
-
-def generate_h(sub_h):
     sub_height = len(sub_h)
     sub_width = len(sub_h[0])
+    h_width = message_size
+    h_height = payload_size
+    h = np.zeros((h_height, h_width), dtype=int)
 
-    # H size hardcoded until further notice
-    h_width = 8
-    h_height = 4
+    def place_submatrix(h_row, h_column):
+        for row in range(sub_height):
+            for column in range(sub_width):
+                if (h_row + row < h_height):
+                    h[h_row + row][h_column + column] = sub_h[row][column]
 
     for row in range(h_height):
-        h.append([])
         for column in range(h_width):
+            if (column == row * sub_width):
+                place_submatrix(row, column)
 
-            # row 0 col 0, row 1 col 2, row 2 col 4, row 3 col 6...  
-            if (row == column / sub_width):
-            
-                # placing sub_h inside h, item by item
-                for y in range(sub_height):
-                    for x in range(sub_width):
-                        h[row + x][column + y] = sub_h[x][y]
-    return h
+    return h  
 
-def generate_sub_h():
-    sub_width = integer_input("Submatrix width: ")
-    sub_height = integer_input("Submatrix height: ")
+def get_column(h, col, sub_width, sub_height):
+    column = ''
+    offset = int(col/sub_width)
+    for row in range(offset, offset + sub_height):
+        if (row == len(h)):
+            break
+        column = column + str(h[row][col])
+    return column[::-1]
+
+def add_edge(tree, node, cover_index, y_bit):
+    cost = cover[cover_index - 1] ^ y_bit
+    weight = node.weight + cost
+
+    match y_bit:
+        case 0:
+            next_state = node.state
+        case 1:
+            column = get_column(h, cover_index - 1, sub_width, sub_height)
+            # cut submatrix adjustment
+            while (len(column) < sub_height):
+                column = '0' + column
+            next_state = int(node.state) ^ int(column)
+
+    existing_node = tree.search_nodes(state=next_state, level=cover_index)
+    
+    if (existing_node):
+        if (existing_node[0].weight > weight):
+            node.add_child(existing_node)
+            existing_node.add_features(dist=cost, weight=weight, y_bit=y_bit)
+    else:
+        node.add_child(name='s' + str(next_state) + 'c' + str(cover_index), dist=cost)
+        node.add_features(weight=weight, y_bit=y_bit, state=next_state, level=cover_index)
+
+def connect_blocks(node):
+    next_state = '0' + node.state[:-1]
+    existing_node = tree.search_nodes(state=next_state)
+
+    if (existing_node):
+        if (existing_node.weight > node.weight):
+            node.add_child(existing_node)
+            existing_node.add_feature(weight=node.weight)
+    else:
+            node.add_child(dist=0, name='s' + next_state + 'p' + str(message_index+1))
+            node.add_features(state=next_state, level='p'+str(message_index+1), weight=node.weight, y_bit=None) 
+
+def move_between_blocks(message_index, cover_index):
+    column_nodes = tree.search_nodes(level=cover_index)
+    for node in column_nodes:
+        if node.state[-1] == message_index:
+            connect_blocks(node)
+
+def move_inside_block(message_index, cover_index, sub_width, tree):
+    for i in range(sub_width):
+        column_nodes = tree.search_nodes(level=cover_index)
+        cover_index += 1
+        for node in column_nodes:
+            add_edge(tree, node, cover_index, 0)
+            add_edge(tree, node, cover_index, 1)
+    move_between_blocks(message_index, cover_index)
+
+def embed(message_index):
+    while (len(message) > message_index):
+        move_inside_block(message_index, cover_index, sub_width, tree)
+        message_index += 1
+
+def get_y(node):
+    y = []
+    while node:
+        y.insert(0, node.y_bit)
+        node = node.up
+    return y
+
+def get_states():
+    states = []
+    for i in range(2 ** sub_height):
+        b = format(i, 'b')
+        b = str(0) * (sub_height - len(b)) + b
+        states.append(b)
+    return states
+
+def init_trellis():
+    tree = Tree()
+    root = tree.add_child(name='s' + states[0] + 'p0')
+    root.add_features(dist=0, weight=0, state=states[0], level=0)
+    return tree
+
+def strict_integer_input(output):
+    while True:
+        value = input(output + ' ')
+        if (not value.strip().isdigit()):
+                print("\nIntegers only, please.\n")
+        else:
+            break
+    return int(value)
+
+def strict_binary_input(output):
+    while True:
+        value = input(output + ' ').strip()
+        non_binary = None
+        for character in value:
+            if (not (character == '0' or character == '1')):
+                non_binary = True
+                break
+        if (non_binary or len(value) == 0):
+            print("\nBase 2 numbers only, please.\n")
+        else:
+            break
+    return int(value)
+
+def get_sub_h():
+    sub_h = []
+    sub_width = strict_integer_input("\nSubmatrix width: ")
+    sub_height = strict_integer_input("Submatrix height: ")
 
     print("We're now building the submatrix, element by element.\n")
 
     for row in range(sub_height):
+        sub_h.append([])
         for column in range(sub_width):
-            sub_h[row][column] = binary_input("Enter binary number for row %, column %: " % (row, column))
+            sub_h[row].append(strict_binary_input(f'Enter binary number for row {row}, column {column}: '))
 
-    print("Submatrix done!\n")
+    print("Inputs done!\n")
     print("Generating submatrix...\n")
     print(sub_h)
+    return sub_h
 
-# todo
-# repeating same movement process until no more message bits exist
-# rinse repeat (goto in)
-# return optimal y at end
-def embed():
+def generate_graph(title, x, y, x_label, y_label):
+    plt.plot(x,y)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
+    plt.show()
 
+def optimize_syndrome():
     pass
-
-def move_inside_block(sub_width):
-    for column in range(sub_width):
-        for row in range(len(trellis)):
-            curr_node = trellis[row][col]
-            if (curr_node.value != None):
-                add_edge(curr_node, 'without_h')
-                add_edge(curr_node, 'with_h')
-        col += 1
-
-# paths apppendado a cada fim de bloco, pos remocao de orfaos
-def end_of_block():
-    for row in range(len(trellis)):
-        lsb = get_lsb(trellis[row][col].state)
-        if lsb != message[i]:
-            trellis[row][col].value = None
-
-def move_between_blocks():
-    i += 1
-    for row in range(len(trellis)):
-        curr_node = trellis[row][col]
-        if (curr_node.value != None):
-            add_edge(curr_node, 'between_blocks')
-
-
-# todo
-# !next i?
-# last column: add zeroes to bottom if #rows < sub_height
-def end_of_trellis():
-    pass
-
-def find_optimal_y(last_column):
-    costs = []
-    for item in last_column:
-        if item.value:
-            costs.append(item.value)
-    min_cost = min(costs)
-    # todo: update this for btree
-    return next(item for item in paths if item[-1]["value"] == min_cost)
-
-def extract():
-    return np.matmul(h, y)
-
-def get_h_column():
-    column = []
-    for row in h:
-        column.append(h[row][col])
-    return column
-
-def add_edge(curr_node, mode):
-    match mode:
-        case 'without_h':
-            value = curr_node.value if cover[col] == 0 else curr_node.value + 1
-            # passing state, value (weight) and y bit
-            new_node = node(curr_node.state, value, 0)
-            curr_node.next_1 = new_node
-            new_node.prev_1 = curr_node
-            # todo: figure out how to access nodes by keys. memaddresses?
-            paths.create_node(new_node, "jane", parent="harry")
-        case 'with_h':
-            state = curr_node.state ^ get_h_column()
-            value = curr_node.value if cover[col] == 1 else curr_node.value + 1
-            # passing state, value (weight) and y bit
-            new_node = node(state, value, 1)
-            curr_node.next_2 = new_node
-            new_node.prev_2 = curr_node    
-        case 'between_blocks':
-            # for future reference: next state = bin(curr_state) - 1 casteado p int
-            state = 0 if (curr_node.state == (0 or 1)) else 1
-            # y bit = None (no y reading in block transition)
-            new_node = node(state, curr_node.value)
-            if curr_node.state == 0:
-                curr_node.next_1 = new_node
-                new_node.prev_1 = curr_node
-            else:
-                curr_node.next_2 = new_node
-                new_node.prev_2 = curr_node    
-
-# todo
-def calc_weight():
-    pass
-
-def get_lsb(value):
-    return value % 2
-
-def img_to_lsb():
-    # hardcoded until conversion function available
-    return [1, 0, 1, 1, 0, 0, 0, 1]
-
-def integer_input(output):
-    while True:
-        value = input(output)
-        if (not value.strip().isdigit()):
-                print("Integers only, please.\n")
-        else:
-            break
-    return value
-
-def binary_input(output):
-    while True:
-        value = input(output)
-        if (int(value.strip()) != (0 or 1)):
-                print("Base 2 only, please.\n")
-        else:
-            break
-    return value
 
 if __name__ == '__main__':
-#     
-#    print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.\n")
-#    print("We hope this command-line finds you well.\n\n")
-#
-##    print("For now, we'll leave the creation of the submatrix to you, user.\n")
-##    sub_h = generate_sub_h()
-#    print("Until further coding, submatrix is fixed at [[1, 0], [1, 1]].")
-#    sub_h = [[1, 0], [1, 1]]
-#    trellis = generate_trellis(2, 2)
-#
-#    print("Generating matrix H...\n")
-#    h = generate_h(sub_h)
-#    print("H = %\n" % h)
-#
-#    cover = img_to_lsb()
-#    print("Cover x has been previously selected from directory containing this program, then converted into LSB vector.")
-#    print("Cover: %" % cover)
-#
-#    print("For now, we'll have a fixed message vector [0, 1, 1, 1].")
-#    message = [0, 1, 1, 1]
-#
-#    y = embed()
-#    print("Found optimal y.")
-#    print("y = %" % y)
+    message = [0,1,1,1]
+    message_index = 0
+    cover = [1,0,1,1,0,0,0,1]
+    cover_index = 0
+    sub_h = [[1,0],[1,1]]
+    sub_height = 2
+    sub_width = 2
+    h = get_h(sub_h, 4, 8)
+    states = get_states()
+    tree = init_trellis()
 
-    print("\nHe-hewwo user ><")
-    print("Let's test some functions!")
-    print("u ready?\n")
-    print(">be me\n")
-
-    root_node = node(0, 0, y[0])
-    paths = Tree()
-    paths.create_node(root_node, 'root')
+    embed(message_index)
