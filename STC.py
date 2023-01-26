@@ -43,7 +43,7 @@ def strict_integer_input(output):
     while True:
         value = input(output + ' ')
         if (not value.strip().isdigit()):
-                print("\nIntegers only, please.\n")
+                print("\nIntegers only, please.")
         else:
             break
     return int(value)
@@ -70,15 +70,11 @@ def select_img():
         else:
             break
     path = './' + str(cover_number) + '.pgm'
-    img_to_lsb(path)
+    return img_to_lsb(path)
 
 def img_to_lsb(path):
     img = Image.open(path).convert('L')
-    pixel_vector = np.asarray(img).flatten()
-
-    for i in range(len(pixel_vector)):
-        pixel_vector[i] %= 2
-    return pixel_vector
+    return  np.asarray(img).flatten()
 
 def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, messages_number, path = ()):
     if(path):
@@ -259,7 +255,9 @@ def get_y(node):
         if (isinstance(node.y_bit, int)):
             y.insert(0, node.y_bit)
         node = node.up
-        
+
+    for i in range(len(h[0])-len(y)):
+        y.append(0)
     print("\nFound optimal y.")
     print("y = " + str(y))
 
@@ -318,13 +316,12 @@ if __name__ == '__main__':
     sub_width = 2
     tree = init_trellis()
 
-#    cover = img_to_lsb()
-    cover = [1,0,1,1,0,0,0,1]
+    cover = select_img()
     print("Cover: " + str(cover) + '\n')
     message = get_user_input(cover)
 
     print("Generating matrix H...\n")
-    h = get_h(sub_h, len(message), 8)
+    h = get_h(sub_h, len(message), len(cover))
     print("H = \n" + str(h))
 
     embed()
