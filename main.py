@@ -67,7 +67,7 @@ def matrixToVector(matrix):
     return vector
 
 # Builds matrix out of vector
-def vectorToMatrix(vector):
+def vector_to_matrix(vector):
     matrix = []
     for i in range(edge_size):
         matrix.append([])
@@ -180,25 +180,25 @@ def viterbi(trellis):
     return
 
 # todo: check
-def getStegoPixels(pixels, x, y):
-    stegoPixels = []
-    differenceVector = []
+def get_stego_pixels(pixels, x, y):
+    stego_pixels = []
+    difference = []
 
     for i in range(len(x)):
-        differenceVector.append(y[i] - x[i])
-    differenceMatrix = vectorToMatrix(differenceVector)
+        difference.append(y[i] - x[i])
+    difference_matrix = vector_to_matrix(difference)
 
     for i in range(len(pixels)):
-        stegoPixels.append([])
+        stego_pixels.append([])
         for j in range(len(pixels[0])):
-            stegoPixels[i].append(pixels[i][j] + differenceMatrix[i][j])
-    return stegoPixels
+            stego_pixels[i].append(pixels[i][j] + difference_matrix[i][j])
+    return stego_pixels
 
-def totalDistortionFromMatrix(pixels, stegoPixels):
+def totalDistortionFromMatrix(pixels, stego_pixels):
     sum = 0
     for i in range(len(pixels)):
         for j in range(len(pixels[0])):
-            if (pixels[i][j] != stegoPixels[i][j]):
+            if (pixels[i][j] != stego_pixels[i][j]):
                 sum += 1
     return sum
 
@@ -453,7 +453,7 @@ if __name__ == '__main__':
     ## Run
     x = pixels_to_LSB(pixels)
     optimalY = syndromeTrellis(H, sub_h, x)
-    # stegoPixels = getStegoPixels(pixels, x, optimalY)
-    # stegoImage = createImageFromPixels(stegoPixels)
+    # stego_pixels = get_stego_pixels(pixels, x, optimalY)
+    # stegoImage = createImageFromPixels(stego_pixels)
     # showResult(image, stegoImage)
     # testUgly_trellis(H, sub_h, x, message)

@@ -6,8 +6,10 @@ from ete3 import Tree
 cover_index = 0
 message_index = 0
 y = []
+cover = []
+path = ''
 
-def get_user_input(cover):
+def get_user_input(cover, sub_width):
 
     def txt_to_bin(str):
         txt_bits = []
@@ -37,6 +39,8 @@ def get_user_input(cover):
         if len(bin_input) > len(cover):
             print("\nThis message is too large for the selected cover! Try something shorter.")
         else:
+            size = len(cover)//sub_width
+            str(bin_input).ljust(size - len(bin_input), '0')
             return bin_input
 
 def strict_integer_input(output):
@@ -63,6 +67,7 @@ def strict_binary_input(output):
     return int(value)
 
 def select_img():
+    global path
     while True:
         cover_number = strict_integer_input("\nSelect image as cover [1-10]:")
         if (cover_number > 10):
@@ -70,7 +75,9 @@ def select_img():
         else:
             break
     path = './' + str(cover_number) + '.pgm'
-    return img_to_lsb(path)
+    img_bits = img_to_lsb(path)
+    print("Cover: " + str(img_bits) + '\n')
+    return img_bits
 
 def img_to_lsb(path):
     img = Image.open(path).convert('L')
@@ -256,10 +263,46 @@ def get_y(node):
             y.insert(0, node.y_bit)
         node = node.up
 
-    for i in range(len(h[0])-len(y)):
-        y.append(0)
-    print("\nFound optimal y.")
-    print("y = " + str(y))
+    for i in range(len(y), len(cover)):
+        y.append(cover[i])
+
+    print("\nCalculating stego object done.")
+    print("Opening image...")
+    display_img()
+
+def display_img():
+    img = Image.open(path).convert('L')
+    img_pixels = np.asarray(img)
+
+    def get_stego_pixels():
+        global path, cover
+        stego_pixels = []
+        difference = []
+
+        for i in range(len(cover)):
+            difference.append(y[i] - cover[i])
+        difference_matrix = vector_to_matrix(difference)
+
+        for i in range(len(img_pixels)):
+            stego_pixels.append([])
+            for j in range(len(img_pixels[0])):
+                stego_pixels[i].append(img_pixels[i][j] + difference_matrix[i][j])
+        return stego_pixels
+
+    def vector_to_matrix(vector):
+        matrix = []
+        cover_rows = len(img_pixels)
+        cover_columns = len(img_pixels[0])
+        for i in range(cover_rows):
+            matrix.append([])
+            for j in range(cover_columns):
+                matrix[i].append(vector[i * cover_rows + j])
+        return matrix
+
+
+    stego_pixels = get_stego_pixels()
+    stego_img = Image.fromarray(np.array(stego_pixels), 'L')
+    stego_img.show()
 
 def extract(h):
 
@@ -310,6 +353,7 @@ if __name__ == '__main__':
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
     print("We hope this command-line finds you well.\n")
 
+
     print("Submatrix currently fixed at [[1, 0], [1, 1]].")
     sub_h = [[1, 0], [1, 1]]
     sub_height = 2
@@ -317,8 +361,7 @@ if __name__ == '__main__':
     tree = init_trellis()
 
     cover = select_img()
-    print("Cover: " + str(cover) + '\n')
-    message = get_user_input(cover)
+    message = get_user_input(cover, sub_width)
 
     print("Generating matrix H...\n")
     h = get_h(sub_h, len(message), len(cover))
