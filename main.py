@@ -344,7 +344,7 @@ def createStrFromMessage(message):
         decodedMessage[i] = chr(packedBits[i])
     return ''.join(decodedMessage)
 
-def lempelzivCompress(str):
+def lempelZivCompress(str):
     packedBits = []
     dico = {}
     for i in range(256):
@@ -367,6 +367,32 @@ def lempelzivCompress(str):
         for j in range(len(strBits)):
             message[i * 12 + j] = strBits[j]
     return message
+
+def lempelZivDecompress(message):
+    str = ""
+    dico = {}
+    for i in range(256):
+        dico[i] = chr(i)
+    packedBits = packMessage(message)
+    v = packedBits[0]
+    w = dico[v]
+    str += w
+    for i in range(1, len(packedBits)):
+        v = packedBits[i]
+        if(dico.get(v) != None):
+            entry = dico[v]
+        else:
+            entry = w + w[0]
+        str += entry
+        dico[len(dico)] = w + entry[0]
+        w = entry
+    return str
+
+def packMessage(message):
+    packedBits = []
+    for i in range(0, len(message), 12):
+        packedBits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
+    return packedBits
 
 if __name__ == '__main__':
 
