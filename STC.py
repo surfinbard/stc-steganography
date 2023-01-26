@@ -165,7 +165,7 @@ def get_h(sub_h, payload_size, message_size):
             if (column == row * sub_width):
                 place_submatrix(row, column)
 
-    return h  
+    return h
 
 def init_trellis():
     tree = Tree()
@@ -198,7 +198,7 @@ def add_edge(tree, node, y_bit):
             next_state = str(bin(int(node.state, 2) ^ int(column, 2))[2:]).zfill(sub_height)
 
     existing_node = tree.search_nodes(state=next_state, level=cover_index+1)
-        
+
     if (len(existing_node)):
         existing_node = existing_node[0]
         if (existing_node.weight > weight):
@@ -244,8 +244,8 @@ def connect_blocks(node):
             existing_node.add_features(weight=node.weight)
     else:
         new_node = node.add_child(dist=0, name='s' + next_state + 'p' + str(message_index+1))
-        new_node.add_features(state=next_state, level='p'+str(message_index+1), weight=node.weight, y_bit='-') 
-        
+        new_node.add_features(state=next_state, level='p'+str(message_index+1), weight=node.weight, y_bit='-')
+
         # check if last block
         if(message_index == len(message) - 1):
             get_y(new_node)
@@ -255,7 +255,7 @@ def embed():
     for index in range(len(message)):
         message_index = index
         move_inside_block(sub_width, tree)
-        
+
 def get_y(node):
     global y
     while node:
@@ -287,7 +287,7 @@ def display_img():
             stego_pixels.append([])
             for j in range(len(img_pixels[0])):
                 stego_pixels[i].append(img_pixels[i][j] + difference_matrix[i][j])
-        return stego_pixels
+        return np.asarray(stego_pixels, 'uint8')
 
     def vector_to_matrix(vector):
         matrix = []
@@ -301,7 +301,7 @@ def display_img():
 
 
     stego_pixels = get_stego_pixels()
-    stego_img = Image.fromarray(np.array(stego_pixels), 'L')
+    stego_img = Image.fromarray(stego_pixels, 'L')
     stego_img.show()
 
 def extract(h):
@@ -331,11 +331,11 @@ def extract(h):
         for i in range(0, len(message), 12):
             txt_bits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
         return txt_bits
-    
+
     m = np.matmul(h, y)
     for i in range(len(m)):
         m[i] %= 2
-    
+
     txt_output = bin_to_txt(list(m))
 
     print("\nMessage retrieved.")
@@ -348,8 +348,8 @@ def generate_graph(title, x, y, x_label, y_label):
     plt.title(title)
     plt.show()
 
-if __name__ == '__main__':    
-     
+if __name__ == '__main__':
+
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
     print("We hope this command-line finds you well.\n")
 

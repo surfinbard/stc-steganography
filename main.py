@@ -192,7 +192,7 @@ def get_stego_pixels(pixels, x, y):
         stego_pixels.append([])
         for j in range(len(pixels[0])):
             stego_pixels[i].append(pixels[i][j] + difference_matrix[i][j])
-    return stego_pixels
+    return np.asarray(stego_pixels, "uint8")
 
 def totalDistortionFromMatrix(pixels, stego_pixels):
     sum = 0
@@ -327,7 +327,7 @@ def open_image(path):
     return Image.open(path).convert('L')
 
 def get_pixels(image):
-    return np.asarray(image)
+    return np.asarray(image, "uint8")
 
 def showImage(image):
     image.show()
