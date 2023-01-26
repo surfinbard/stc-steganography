@@ -3,14 +3,14 @@ import array as arr
 import numpy as np
 
 # size of edges of x image
-edgeSize = 3
+edge_size = 3
 # 8bit grayscale pixel range
 pixelRange = 256
-# alpha = messageLength / edgeSize
+# alpha = message_length / edge_size
 alpha = 1  # 0.1
 # size of the subMatrix
-subHeight = 2
-subWidth = 2
+sub_height = 2
+sub_width = 2
 
 randomImg = True
 path = "Path to complete"
@@ -20,59 +20,59 @@ path = "Path to complete"
 # Returns empty matrix H
 def generateH():
     H = []
-    for i in range(edgeSize * alpha):
+    for i in range(edge_size * alpha):
         H.append([])
-        for j in range(edgeSize ** 2):
+        for j in range(edge_size ** 2):
             H[i].append(None)
     return H
 
 # Returns subMatrix
-def generateSubH():
-    subH = [[1, 0], [1, 1]]
-    return subH
+def generateSub_h():
+    sub_h = [[1, 0], [1, 1]]
+    return sub_h
 
 # Generates message
-def generateRandomMsg(messageLength):
+def generateRandomMsg(message_length):
     message = []
-    for i in range(messageLength):
+    for i in range(message_length):
         message.append(random.randint(0, 1))
     return message
 
-def fillH(H, subH):
+def fillH(H, sub_h):
     matrixHeight = len(H)
     matrixWidth = len(H[0])
-    subHeight = len(subH)
-    subWidth = len(subH[0])
+    sub_height = len(sub_h)
+    sub_width = len(sub_h[0])
     # all height indexes will be used but not all width indexes, hence j on the outside (easier)
     for i in range(matrixHeight):
         for j in range(matrixWidth):
-            if ((i == j / subWidth) & (j % subWidth == 0)):
-                # placing subH inside H, item by item
-                for x in range(subHeight):
-                    for y in range(subWidth):
+            if ((i == j / sub_width) & (j % sub_width == 0)):
+                # placing sub_h inside H, item by item
+                for x in range(sub_height):
+                    for y in range(sub_width):
                         if((i + x < matrixHeight) & (j + y < matrixWidth)):
-                            H[i + x][j + y] = subH[x][y]
+                            H[i + x][j + y] = sub_h[x][y]
 
-def createH(subH):
+def createH(sub_h):
     H = generateH()
-    fillH(H, subH)
+    fillH(H, sub_h)
     return H
 
 # Outputs matrix in vector format
 def matrixToVector(matrix):
     vector = []
-    for i in range(edgeSize):
-        for j in range(edgeSize):
+    for i in range(edge_size):
+        for j in range(edge_size):
             vector.append(matrix[i][j])
     return vector
 
 # Builds matrix out of vector
 def vectorToMatrix(vector):
     matrix = []
-    for i in range(edgeSize):
+    for i in range(edge_size):
         matrix.append([])
-        for j in range(edgeSize):
-            matrix[i].append(vector[i * edgeSize + j])
+        for j in range(edge_size):
+            matrix[i].append(vector[i * edge_size + j])
     return matrix
 
 # Gets LSB of binary number
@@ -87,11 +87,11 @@ def LSBVector(vector):
     return result
 
 # Converts pixels to LSB vector
-def pixelsToLSBVector(pixels):
+def pixels_to_LSB(pixels):
     return LSBVector(matrixToVector(pixels))
 
 # Returns optimal y after trellis construction
-def syndromeTrellis(H, subH, x):
+def syndromeTrellis(H, sub_h, x):
 
 
     return
@@ -108,7 +108,7 @@ def moveBetweenBlocks(i):
         return 1
 
 def moveInsideBlocks(trellis, H):
-    for i in range(subWidth):
+    for i in range(sub_width):
         for j in range(len(trellis[i])):
             if (node.data):
                 if (not node.weight):
@@ -202,7 +202,7 @@ def totalDistortionFromMatrix(pixels, stegoPixels):
                 sum += 1
     return sum
 
-def totalDistortionFromVector(x, y):
+def get_distortion(x, y):
     sum = 0
     for i in range(len(x)):
         if (x[i] != y[i]):
@@ -219,41 +219,41 @@ def showResult(image, stegoImage):
 
 import math
 
-def uglyTrellis(H, subH, x, message):
+def ugly_trellis(H, sub_h, x, message):
     trellisMatrix = []
-    for i in range(subHeight ** 2):
+    for i in range(sub_height ** 2):
         trellisMatrix.append([])
         for j in range(len(H[0]) + 1):
             trellisMatrix[i].append(None)
-    forwardTrellis(H, subH, x, message, trellisMatrix)
+    forwardTrellis(H, sub_h, x, message, trellisMatrix)
     y = backwardTrellis(trellisMatrix)
     return y
 
-def forwardTrellis(H, subH, x, message, trellisMatrix):
+def forwardTrellis(H, sub_h, x, message, trellisMatrix):
     trellisMatrix[0][0] = [None, None, 0, True] # [previousState, bitValue, weightSum, continuePath]
     for j in range(len(H[0])):
         columnH = getColumnH(H, j)
-        forwardTrellisStep(trellisMatrix, H, subH, x, message, j, columnH)
-        if(((j+1)%subWidth == 0) | (j == len(H[0])-1)):
-            endBlock(trellisMatrix, H, subH, x, message, j+1)
+        forwardTrellisStep(trellisMatrix, H, sub_h, x, message, j, columnH)
+        if(((j+1)%sub_width == 0) | (j == len(H[0])-1)):
+            endBlock(trellisMatrix, H, sub_h, x, message, j+1)
     return trellisMatrix
 
 def getColumnH(H, j):
     columnH = []
-    for i in range(subHeight):
-        if(j//subWidth + i < len(H)):
-            columnH.append(H[j//subWidth + i][j])
+    for i in range(sub_height):
+        if(j//sub_width + i < len(H)):
+            columnH.append(H[j//sub_width + i][j])
         else:
             columnH.append(0)
     return columnH
 
 
-def forwardTrellisStep(trellisMatrix, H, currentSubH, x, message, j, columnH):
+def forwardTrellisStep(trellisMatrix, H, currentSub_h, x, message, j, columnH):
     yProduct = []
     yProduct.append(bitToNumber(np.dot(columnH, 0)))
     yProduct.append(bitToNumber(np.dot(columnH, 1)))
     weight = [abs(x[j] - 0), abs(x[j] - 1)]
-    for i in range(subHeight ** 2):
+    for i in range(sub_height ** 2):
         if(trellisMatrix[i][j] != None):
             if(trellisMatrix[i][j][3]):
                 for k in range(2):
@@ -264,11 +264,11 @@ def forwardTrellisStep(trellisMatrix, H, currentSubH, x, message, j, columnH):
                         trellisMatrix[i ^ yProduct[k]][j+1] = [i, k, trellisMatrix[i][j][2] + weight[k], True]
     return trellisMatrix
 
-def endBlock(trellisMatrix, H, subH, x, message, j):
-    for i in range(subHeight ** 2):
+def endBlock(trellisMatrix, H, sub_h, x, message, j):
+    for i in range(sub_height ** 2):
         if(trellisMatrix[i][j] != None):
-            if(j//subWidth - 1 < len(message)):
-                if(i%2 != message[j//subWidth - 1]):
+            if(j//sub_width - 1 < len(message)):
+                if(i%2 != message[j//sub_width - 1]):
                     trellisMatrix[i][j][3] = False
                 else:
                     trellisMatrix[i//2][j] = trellisMatrix[i][j]
@@ -278,7 +278,7 @@ def endBlock(trellisMatrix, H, subH, x, message, j):
 
 def backwardTrellis(trellisMatrix):
     pathEnds = []
-    for i in range(subHeight ** 2):
+    for i in range(sub_height ** 2):
         if(trellisMatrix[i][len(H[0])] != None):
             if(trellisMatrix[i][len(H[0])][3]):
                 pathEnds.append(i)
@@ -300,8 +300,8 @@ def bitToNumber(bitList):
         sum += bitList[i] * (2 ** i)
     return sum
 
-def testUglyTrellis(H, subH, x, message):
-    y = uglyTrellis(H, subH, x, message)
+def testUgly_trellis(H, sub_h, x, message):
+    y = ugly_trellis(H, sub_h, x, message)
     print("x =", x)
     print("y =", y)
     replaceNoneByZero(H)
@@ -323,10 +323,10 @@ def replaceNoneByZero(H):
 
 from PIL import Image
 
-def openImage(path):
+def open_image(path):
     return Image.open(path).convert('L')
 
-def getPixels(image):
+def get_pixels(image):
     return np.asarray(image)
 
 def showImage(image):
@@ -335,79 +335,62 @@ def showImage(image):
 def createImageFromPixels(pixels):
     return Image.fromarray(pixels, 'L')
 
-def generateRandomImg():
-    pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
+def generate_random_img():
+    pixels = np.random.randint(0, pixelRange, (edge_size, edge_size), "uint8")
     return Image.fromarray(pixels)
 
 ## Best H seeker
 
-def foundBestH(edgeSize, alpha, subHeight, subWidth, iterationNumber, messagesNumber, path = ()):
+def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, messages_number, path = ()):
     if(path):
-        image = openImage(path)
+        image = open_image(path)
     else:
-        image = generateRandomImg()
-    pixels = getPixels(image)
-    x = pixelsToLSBVector(pixels)
-    messageLength = len(pixels) * alpha
-    messages = generateMultipleRandomMsg(messageLength, messagesNumber)
-    subHs = np.empty((iterationNumber, subHeight, subWidth), "uint8")
-    averagesEfficiency = np.empty(iterationNumber)
-    for i in range(iterationNumber):
-        subH = generateRandomSubH(subHeight, subWidth)
-        subHs[i] = subH
-        H = createH(subH)
-        averagesEfficiency[i] = getAverageEfficiency(x, H, subH, messages, edgeSize)
-    return subHs[np.argmax(averagesEfficiency)]
+        image = generate_random_img()
+    pixels = get_pixels(image)
+    x = pixels_to_LSB(pixels)
+    message_length = len(pixels) * alpha
+    messages = get_random_msg(message_length, messages_number)
+    submatrixes = np.empty((iteration_number, sub_height, sub_width), "uint8")
+    avg_efficiencies = np.empty(iteration_number)
+    for i in range(iteration_number):
+        sub_h = get_random_sub_h(sub_height, sub_width)
+        submatrixes[i] = sub_h
+        H = createH(sub_h)
+        avg_efficiencies[i] = get_avg_efficiency(x, H, sub_h, messages, edge_size)
+    return submatrixes[np.argmax(avg_efficiencies)]
 
-def generateRandomSubH(subHeight, subWidth):
-    subH = np.random.randint(0, 2, (subHeight, subWidth), "uint8")
-    if(not np.isin(1, subH[0])):
-        subH[0][np.random.randint(subWidth)] = 1
-    if(not np.isin(1, subH[subHeight - 1])):
-        subH[subHeight - 1][np.random.randint(subWidth)] = 1
-    return subH
+def get_random_sub_h(sub_height, sub_width):
+    sub_h = np.random.randint(0, 2, (sub_height, sub_width), "uint8")
+    if(not np.isin(1, sub_h[0])):
+        sub_h[0][np.random.randint(sub_width)] = 1
+    if(not np.isin(1, sub_h[sub_height - 1])):
+        sub_h[sub_height - 1][np.random.randint(sub_width)] = 1
+    return sub_h
 
-def calculateEfficiency(pixelsNumber, alpha, distortion):
-    return pixelsNumber * alpha / (distortion + 1)
+def get_efficiency(pixels, alpha, distortion):
+    return pixels * alpha / (distortion + 1)
 
-def generateMultipleRandomMsg(messageLength, messagesNumber):
-    messages = np.empty((messagesNumber, messageLength), 'uint8')
-    for i in range(messagesNumber):
-        messages[i] = generateRandomMsg(messageLength)
+def get_random_msg(message_length, messages_number):
+    messages = np.empty((messages_number, message_length), 'uint8')
+    for i in range(messages_number):
+        messages[i] = generateRandomMsg(message_length)
     return messages
 
-def getAverageEfficiency(x, H, subH, messages, edgeSize):
-    messagesNumber = len(messages)
-    efficiencies = np.zeros(messagesNumber)
-    for i in range(messagesNumber):
+def get_avg_efficiency(x, H, sub_h, messages, edge_size):
+    messages_number = len(messages)
+    efficiencies = np.zeros(messages_number)
+    for i in range(messages_number):
         message = messages[i]
-        y = uglyTrellis(H, subH, x, message)
-        distortion = totalDistortionFromVector(x, y)
-        efficiencies[i] = calculateEfficiency(edgeSize ** 2, alpha, distortion)
-    averageEfficiency = np.mean(efficiencies)
-    return averageEfficiency
+        y = ugly_trellis(H, sub_h, x, message)
+        distortion = get_distortion(x, y)
+        efficiencies[i] = get_efficiency(edge_size ** 2, alpha, distortion)
+    avg_efficiency = np.mean(efficiencies)
+    return avg_efficiency
 
 ## Message
 
-def createMessageFromStr(str):
-    packedBits = np.empty(len(str), 'uint8')
-    for i in range(len(str)):
-        number = ord(str[i])
-        if((number < 0) | (255 < number)):
-            number = 63
-        packedBits[i] = number
-    message = np.unpackbits(packedBits)
-    return message
-
-def createStrFromMessage(message):
-    packedBits = np.packbits(message)
-    decodedMessage = np.empty(len(packedBits), '<U1')
-    for i in range(len(packedBits)):
-        decodedMessage[i] = chr(packedBits[i])
-    return ''.join(decodedMessage)
-
-def lempelZivCompress(str):
-    packedBits = []
+def txt_to_bin(str):
+    txt_bits = []
     dico = {}
     for i in range(256):
         dico[chr(i)] = i
@@ -418,27 +401,27 @@ def lempelZivCompress(str):
             w = p
         else:
             dico[p] = len(dico)
-            packedBits.append(dico[w])
+            txt_bits.append(dico[w])
             w = c
-    packedBits.append(dico[w])
-    message = np.empty(len(packedBits) * 12, 'uint8')
-    for i in range(len(packedBits)):
-        strBits = format(packedBits[i], '012b')
-        for j in range(len(strBits)):
-            message[i * 12 + j] = strBits[j]
+    txt_bits.append(dico[w])
+    message = np.empty(len(txt_bits) * 12, 'uint8')
+    for i in range(len(txt_bits)):
+        str_bits = format(txt_bits[i], '012b')
+        for j in range(len(str_bits)):
+            message[i * 12 + j] = str_bits[j]
     return message
 
-def lempelZivDecompress(message):
+def bin_to_txt(message):
     str = ""
     dico = {}
     for i in range(256):
         dico[i] = chr(i)
-    packedBits = packMessage(message)
-    v = packedBits[0]
+    txt_bits = packed(message)
+    v = txt_bits[0]
     w = dico[v]
     str += w
-    for i in range(1, len(packedBits)):
-        v = packedBits[i]
+    for i in range(1, len(txt_bits)):
+        v = txt_bits[i]
         if(dico.get(v) != None):
             entry = dico[v]
         else:
@@ -448,29 +431,29 @@ def lempelZivDecompress(message):
         w = entry
     return str
 
-def packMessage(message):
-    packedBits = []
+def packed(message):
+    txt_bits = []
     for i in range(0, len(message), 12):
-        packedBits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
-    return packedBits
+        txt_bits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
+    return txt_bits
 
 if __name__ == '__main__':
 
     ## Initialize data
     if(not randomImg):
-        image = openImage(path)
+        image = open_image(path)
     else :
-        image = generateRandomImg()
-    pixels = getPixels(image)
-    subH = generateSubH()
+        image = generate_random_img()
+    pixels = get_pixels(image)
+    sub_h = generateSub_h()
     H = generateH()
-    fillH(H, subH)
-    message = generateRandomMsg(edgeSize * alpha)
+    fillH(H, sub_h)
+    message = generateRandomMsg(edge_size * alpha)
 
     ## Run
-    x = pixelsToLSBVector(pixels)
-    optimalY = syndromeTrellis(H, subH, x)
+    x = pixels_to_LSB(pixels)
+    optimalY = syndromeTrellis(H, sub_h, x)
     # stegoPixels = getStegoPixels(pixels, x, optimalY)
     # stegoImage = createImageFromPixels(stegoPixels)
     # showResult(image, stegoImage)
-    # testUglyTrellis(H, subH, x, message)
+    # testUgly_trellis(H, sub_h, x, message)

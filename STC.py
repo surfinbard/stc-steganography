@@ -7,6 +7,38 @@ cover_index = 0
 message_index = 0
 y = []
 
+def get_user_input(cover):
+
+    def txt_to_bin(str):
+        txt_bits = []
+        dico = {}
+        for i in range(256):
+            dico[chr(i)] = i
+        w = ""
+        for c in str:
+            p = w + c
+            if(dico.get(p) != None):
+                w = p
+            else:
+                dico[p] = len(dico)
+                txt_bits.append(dico[w])
+                w = c
+        txt_bits.append(dico[w])
+        message = np.empty(len(txt_bits) * 12, 'uint8')
+        for i in range(len(txt_bits)):
+            str_bits = format(txt_bits[i], '012b')
+            for j in range(len(str_bits)):
+                message[i * 12 + j] = str_bits[j]
+        return message
+
+    while True:
+        txt_input = input("What would you like to hide today? ")
+        bin_input = txt_to_bin(txt_input)
+        if len(bin_input) > len(cover):
+            print("\nThis message is too large for the selected cover! Try something shorter.")
+        else:
+            return bin_input
+
 def strict_integer_input(output):
     while True:
         value = input(output + ' ')
@@ -47,6 +79,52 @@ def img_to_lsb(path):
     for i in range(len(pixel_vector)):
         pixel_vector[i] %= 2
     return pixel_vector
+
+def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, messages_number, path = ()):
+    if(path):
+        image = open_image(path)
+    else:
+        image = generate_random_img()
+    pixels = get_pixels(image)
+    x = pixels_to_LSB(pixels)
+    message_length = len(pixels) * alpha
+    messages = get_random_msg(message_length, messages_number)
+    submatrixes = np.empty((iteration_number, sub_height, sub_width), "uint8")
+    avg_efficiencies = np.empty(iteration_number)
+    for i in range(iteration_number):
+        sub_h = get_random_sub_h(sub_height, sub_width)
+        submatrixes[i] = sub_h
+        H = createH(sub_h)
+        avg_efficiencies[i] = get_avg_efficiency(x, H, sub_h, messages, edge_size)
+    return submatrixes[np.argmax(avg_efficiencies)]
+
+def get_random_sub_h(sub_height, sub_width):
+    sub_h = np.random.randint(0, 2, (sub_height, sub_width), "uint8")
+    if(not np.isin(1, sub_h[0])):
+        sub_h[0][np.random.randint(sub_width)] = 1
+    if(not np.isin(1, sub_h[sub_height - 1])):
+        sub_h[sub_height - 1][np.random.randint(sub_width)] = 1
+    return sub_h
+
+def get_efficiency(pixels, alpha, distortion):
+    return pixels * alpha / (distortion + 1)
+
+def get_random_msg(message_length, messages_number):
+    messages = np.empty((messages_number, message_length), 'uint8')
+    for i in range(messages_number):
+        messages[i] = generateRandomMsg(message_length)
+    return messages
+
+def get_avg_efficiency(x, H, sub_h, messages, edge_size):
+    messages_number = len(messages)
+    efficiencies = np.zeros(messages_number)
+    for i in range(messages_number):
+        message = messages[i]
+        y = ugly_trellis(H, sub_h, x, message)
+        distortion = get_distortion(x, y)
+        efficiencies[i] = get_efficiency(edge_size ** 2, alpha, distortion)
+    avg_efficiency = np.mean(efficiencies)
+    return avg_efficiency
 
 def get_sub_h():
     sub_h = []
@@ -186,12 +264,41 @@ def get_y(node):
     print("y = " + str(y))
 
 def extract(h):
+
+    def bin_to_txt(message):
+        str = ""
+        dico = {}
+        for i in range(256):
+            dico[i] = chr(i)
+        txt_bits = packed(message)
+        v = txt_bits[0]
+        w = dico[v]
+        str += w
+        for i in range(1, len(txt_bits)):
+            v = txt_bits[i]
+            if(dico.get(v) != None):
+                entry = dico[v]
+            else:
+                entry = w + w[0]
+            str += entry
+            dico[len(dico)] = w + entry[0]
+            w = entry
+        return str
+
+    def packed(message):
+        txt_bits = []
+        for i in range(0, len(message), 12):
+            txt_bits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
+        return txt_bits
+    
     m = np.matmul(h, y)
     for i in range(len(m)):
         m[i] %= 2
     
+    txt_output = bin_to_txt(list(m))
+
     print("\nMessage retrieved.")
-    print("M = " + str(m) + '\n')
+    print("M = " + txt_output + '\n')
 
 def generate_graph(title, x, y, x_label, y_label):
     plt.plot(x,y)
@@ -211,16 +318,14 @@ if __name__ == '__main__':
     sub_width = 2
     tree = init_trellis()
 
-    print("Generating matrix H...\n")
-    h = get_h(sub_h, 4, 8)
-    print("H = \n" + str(h))
-
 #    cover = img_to_lsb()
     cover = [1,0,1,1,0,0,0,1]
-    print("\nCover: " + str(cover))
+    print("Cover: " + str(cover) + '\n')
+    message = get_user_input(cover)
 
-    print("Current message vector fixed at [0, 1, 1, 1].")
-    message = [0, 1, 1, 1]
+    print("Generating matrix H...\n")
+    h = get_h(sub_h, len(message), 8)
+    print("H = \n" + str(h))
 
     embed()
     extract(h)
