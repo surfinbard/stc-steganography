@@ -325,6 +325,73 @@ def generateRandomImg():
     pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
     return Image.fromarray(pixels)
 
+## Message
+
+def createMessageFromStr(str):
+    packedBits = np.empty(len(str), 'uint8')
+    for i in range(len(str)):
+        number = ord(str[i])
+        if((number < 0) | (255 < number)):
+            number = 63
+        packedBits[i] = number
+    message = np.unpackbits(packedBits)
+    return message
+
+def createStrFromMessage(message):
+    packedBits = np.packbits(message)
+    decodedMessage = np.empty(len(packedBits), '<U1')
+    for i in range(len(packedBits)):
+        decodedMessage[i] = chr(packedBits[i])
+    return ''.join(decodedMessage)
+
+def lempelZivCompress(str):
+    packedBits = []
+    dico = {}
+    for i in range(256):
+        dico[chr(i)] = i
+    w = ""
+    for c in str:
+        p = w + c
+        if(dico.get(p) != None):
+            w = p
+        else:
+            dico[p] = len(dico)
+            packedBits.append(dico[w])
+            w = c
+    packedBits.append(dico[w])
+    message = np.empty(len(packedBits) * 12, 'uint8')
+    for i in range(len(packedBits)):
+        strBits = format(packedBits[i], '012b')
+        for j in range(len(strBits)):
+            message[i * 12 + j] = strBits[j]
+    return message
+
+def lempelZivDecompress(message):
+    str = ""
+    dico = {}
+    for i in range(256):
+        dico[i] = chr(i)
+    packedBits = packMessage(message)
+    v = packedBits[0]
+    w = dico[v]
+    str += w
+    for i in range(1, len(packedBits)):
+        v = packedBits[i]
+        if(dico.get(v) != None):
+            entry = dico[v]
+        else:
+            entry = w + w[0]
+        str += entry
+        dico[len(dico)] = w + entry[0]
+        w = entry
+    return str
+
+def packMessage(message):
+    packedBits = []
+    for i in range(0, len(message), 12):
+        packedBits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
+    return packedBits
+
 if __name__ == '__main__':
 
     ## Initialize data
