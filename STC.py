@@ -76,7 +76,7 @@ def get_h(sub_h, payload_size, message_size):
     def place_submatrix(h_row, h_column):
         for row in range(sub_height):
             for column in range(sub_width):
-                if (h_row + row < h_height):
+                if (h_row + row < h_height and h_column + column < h_width):
                     h[h_row + row][h_column + column] = sub_h[row][column]
 
     for row in range(h_height):
@@ -114,7 +114,7 @@ def add_edge(tree, node, y_bit):
             next_state = node.state
         case 1:
             column = get_column(h, sub_width, sub_height)
-            next_state = str(int(node.state) ^ int(column)).zfill(sub_height)
+            next_state = str(bin(int(node.state, 2) ^ int(column, 2))[2:]).zfill(sub_height)
 
     existing_node = tree.search_nodes(state=next_state, level=cover_index+1)
         
@@ -165,7 +165,8 @@ def connect_blocks(node):
         new_node = node.add_child(dist=0, name='s' + next_state + 'p' + str(message_index+1))
         new_node.add_features(state=next_state, level='p'+str(message_index+1), weight=node.weight, y_bit='-') 
         
-        if(message_index == len(message)-1):
+        # check if last block
+        if(message_index == len(message) - 1):
             get_y(new_node)
 
 def embed():
