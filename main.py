@@ -358,9 +358,7 @@ def lempelZivCompress(str):
             dico[p] = len(dico)
             packedBits.append(dico[w])
             w = c
-    if(len(w) !=1 ):
-        packedBits.append(dico[w])
-
+    packedBits.append(dico[w])
     message = np.empty(len(packedBits) * 12, 'uint8')
     for i in range(len(packedBits)):
         strBits = format(packedBits[i], '012b')
