@@ -1,5 +1,4 @@
 import numpy as np
-from treelib import Node, Tree
 import matplotlib.pyplot as plt
 from PIL import Image
 from ete3 import Tree
