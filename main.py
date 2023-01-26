@@ -344,6 +344,30 @@ def createStrFromMessage(message):
         decodedMessage[i] = chr(packedBits[i])
     return ''.join(decodedMessage)
 
+def lempelzivCompress(str):
+    packedBits = []
+    dico = {}
+    for i in range(256):
+        dico[chr(i)] = i
+    w = ""
+    for c in str:
+        p = w + c
+        if(dico.get(p) != None):
+            w = p
+        else:
+            dico[p] = len(dico)
+            packedBits.append(dico[w])
+            w = c
+    if(len(w) !=1 ):
+        packedBits.append(dico[w])
+
+    message = np.empty(len(packedBits) * 12, 'uint8')
+    for i in range(len(packedBits)):
+        strBits = format(packedBits[i], '012b')
+        for j in range(len(strBits)):
+            message[i * 12 + j] = strBits[j]
+    return message
+
 if __name__ == '__main__':
 
     ## Initialize data
