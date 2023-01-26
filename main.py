@@ -3,7 +3,7 @@ import array as arr
 import numpy as np
 
 # size of edges of x image
-edge_size = 3
+edge_size = 512
 # 8bit grayscale pixel range
 pixelRange = 256
 # alpha = message_length / edge_size
@@ -302,12 +302,15 @@ def bitToNumber(bitList):
 
 def testUgly_trellis(H, sub_h, x, message):
     y = ugly_trellis(H, sub_h, x, message)
-    print("x =", x)
-    print("y =", y)
+    print("x =", np.asarray(x))
+    print("y =", np.asarray(y))
     replaceNoneByZero(H)
-    print("H =", H)
-    print("message =", message)
+    print("H =", np.asarray(H))
+    print("message =", np.asarray(message))
     print("H*y =", np.mod(np.dot(H, y), 2))
+    stegoPixels = get_stego_pixels(pixels, x, y)
+    stegoImage = createImageFromPixels(stegoPixels)
+    showResult(image, stegoImage)
     return
 
 def replaceNoneByZero(H):
