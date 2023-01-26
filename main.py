@@ -32,24 +32,31 @@ def generateSubH():
     return subH
 
 # Generates message
-def generateRandomMsg():
+def generateRandomMsg(messageLength):
     message = []
-    for i in range(edgeSize * alpha):
+    for i in range(messageLength):
         message.append(random.randint(0, 1))
     return message
 
 def fillH(H, subH):
     matrixHeight = len(H)
     matrixWidth = len(H[0])
+    subHeight = len(subH)
+    subWidth = len(subH[0])
     # all height indexes will be used but not all width indexes, hence j on the outside (easier)
     for i in range(matrixHeight):
         for j in range(matrixWidth):
             if ((i == j / subWidth) & (j % subWidth == 0)):
                 # placing subH inside H, item by item
-                for x in range(subWidth):
-                    for y in range(subHeight):
+                for x in range(subHeight):
+                    for y in range(subWidth):
                         if((i + x < matrixHeight) & (j + y < matrixWidth)):
                             H[i + x][j + y] = subH[x][y]
+
+def createH(subH):
+    H = generateH()
+    fillH(H, subH)
+    return H
 
 # Outputs matrix in vector format
 def matrixToVector(matrix):
@@ -187,12 +194,19 @@ def getStegoPixels(pixels, x, y):
             stegoPixels[i].append(pixels[i][j] + differenceMatrix[i][j])
     return stegoPixels
 
-def totalDistortion(pixels, stegoPixels):
+def totalDistortionFromMatrix(pixels, stegoPixels):
     sum = 0
     for i in range(len(pixels)):
         for j in range(len(pixels[0])):
             if (pixels[i][j] != stegoPixels[i][j]):
                 sum += 1
+    return sum
+
+def totalDistortionFromVector(x, y):
+    sum = 0
+    for i in range(len(x)):
+        if (x[i] != y[i]):
+            sum += 1
     return sum
 
 # Outputs visual representation of the final result
@@ -218,13 +232,13 @@ def uglyTrellis(H, subH, x, message):
 def forwardTrellis(H, subH, x, message, trellisMatrix):
     trellisMatrix[0][0] = [None, None, 0, True] # [previousState, bitValue, weightSum, continuePath]
     for j in range(len(H[0])):
-        columnH = getColumnH(j)
+        columnH = getColumnH(H, j)
         forwardTrellisStep(trellisMatrix, H, subH, x, message, j, columnH)
         if(((j+1)%subWidth == 0) | (j == len(H[0])-1)):
             endBlock(trellisMatrix, H, subH, x, message, j+1)
     return trellisMatrix
 
-def getColumnH(j):
+def getColumnH(H, j):
     columnH = []
     for i in range(subHeight):
         if(j//subWidth + i < len(H)):
@@ -325,6 +339,54 @@ def generateRandomImg():
     pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
     return Image.fromarray(pixels)
 
+## Best H seeker
+
+def foundBestH(edgeSize, alpha, subHeight, subWidth, iterationNumber, messagesNumber, path = ()):
+    if(path):
+        image = openImage(path)
+    else:
+        image = generateRandomImg()
+    pixels = getPixels(image)
+    x = pixelsToLSBVector(pixels)
+    messageLength = len(pixels) * alpha
+    messages = generateMultipleRandomMsg(messageLength, messagesNumber)
+    subHs = np.empty((iterationNumber, subHeight, subWidth), "uint8")
+    averagesEfficiency = np.empty(iterationNumber)
+    for i in range(iterationNumber):
+        subH = generateRandomSubH(subHeight, subWidth)
+        subHs[i] = subH
+        H = createH(subH)
+        averagesEfficiency[i] = getAverageEfficiency(x, H, subH, messages, edgeSize)
+    return subHs[np.argmax(averagesEfficiency)]
+
+def generateRandomSubH(subHeight, subWidth):
+    subH = np.random.randint(0, 2, (subHeight, subWidth), "uint8")
+    if(not np.isin(1, subH[0])):
+        subH[0][np.random.randint(subWidth)] = 1
+    if(not np.isin(1, subH[subHeight - 1])):
+        subH[subHeight - 1][np.random.randint(subWidth)] = 1
+    return subH
+
+def calculateEfficiency(pixelsNumber, alpha, distortion):
+    return pixelsNumber * alpha / (distortion + 1)
+
+def generateMultipleRandomMsg(messageLength, messagesNumber):
+    messages = np.empty((messagesNumber, messageLength), 'uint8')
+    for i in range(messagesNumber):
+        messages[i] = generateRandomMsg(messageLength)
+    return messages
+
+def getAverageEfficiency(x, H, subH, messages, edgeSize):
+    messagesNumber = len(messages)
+    efficiencies = np.zeros(messagesNumber)
+    for i in range(messagesNumber):
+        message = messages[i]
+        y = uglyTrellis(H, subH, x, message)
+        distortion = totalDistortionFromVector(x, y)
+        efficiencies[i] = calculateEfficiency(edgeSize ** 2, alpha, distortion)
+    averageEfficiency = np.mean(efficiencies)
+    return averageEfficiency
+
 ## Message
 
 def createMessageFromStr(str):
@@ -403,7 +465,7 @@ if __name__ == '__main__':
     subH = generateSubH()
     H = generateH()
     fillH(H, subH)
-    message = generateRandomMsg()
+    message = generateRandomMsg(edgeSize * alpha)
 
     ## Run
     x = pixelsToLSBVector(pixels)
