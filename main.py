@@ -325,6 +325,25 @@ def generateRandomImg():
     pixels = np.random.randint(0, pixelRange, (edgeSize, edgeSize), "uint8")
     return Image.fromarray(pixels)
 
+## Message
+
+def createMessageFromStr(str):
+    packedBits = np.empty(len(str), 'uint8')
+    for i in range(len(str)):
+        number = ord(str[i])
+        if((number < 0) | (255 < number)):
+            number = 63
+        packedBits[i] = number
+    message = np.unpackbits(packedBits)
+    return message
+
+def createStrFromMessage(message):
+    packedBits = np.packbits(message)
+    decodedMessage = np.empty(len(packedBits), '<U1')
+    for i in range(len(packedBits)):
+        decodedMessage[i] = chr(packedBits[i])
+    return ''.join(decodedMessage)
+
 if __name__ == '__main__':
 
     ## Initialize data
