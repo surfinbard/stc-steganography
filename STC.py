@@ -1,5 +1,7 @@
+import random
 import numpy as np
 import matplotlib.pyplot as plt
+from bitstring import BitArray
 from PIL import Image
 from ete3 import Tree
 
@@ -12,7 +14,7 @@ path = ''
 def get_user_input():
 
     while True:
-        option = input("Would you like to choose a message to hide (1) or to generate random messages and see a graphical representations of their embedding efficiencies (2)? ")
+        option = input("Would you like to choose a message to hide (1) \nor to generate random messages and see a graphical representations of their embedding efficiencies (2)? ")
         if (not (option == '1' or option == '2')):
             print("Unrecognized input. Try again.")
         else:
@@ -53,7 +55,11 @@ def get_user_message(sub_width):
             return bin_input
 
 def get_random_payloads():
-    pass
+    size = len(cover)//sub_width
+    messages = []
+    for i in range(10):
+        messages.append(str(BitArray([random.randint(0, 1) for _ in range(42)])).ljust(size, '0'))
+    return messages
 
 def strict_integer_input(output):
     while True:
@@ -95,7 +101,7 @@ def img_to_lsb(path):
     img = Image.open(path).convert('L')
     return  np.asarray(img).flatten()
 
-def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, messages_number, path = ()):
+def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, message_number, path = ()):
     if(path):
         image = open_image(path)
     else:
@@ -103,7 +109,7 @@ def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number,
     pixels = get_pixels(image)
     x = pixels_to_LSB(pixels)
     message_length = len(pixels) * alpha
-    messages = get_random_msg(message_length, messages_number)
+    messages = get_random_msg(message_length, message_number)
     submatrixes = np.empty((iteration_number, sub_height, sub_width), "uint8")
     avg_efficiencies = np.empty(iteration_number)
     for i in range(iteration_number):
@@ -124,16 +130,10 @@ def get_random_sub_h(sub_height, sub_width):
 def get_efficiency(pixels, alpha, distortion):
     return pixels * alpha / (distortion + 1)
 
-def get_random_msg(message_length, messages_number):
-    messages = np.empty((messages_number, message_length), 'uint8')
-    for i in range(messages_number):
-        messages[i] = generateRandomMsg(message_length)
-    return messages
-
 def get_avg_efficiency(x, H, sub_h, messages, edge_size):
-    messages_number = len(messages)
-    efficiencies = np.zeros(messages_number)
-    for i in range(messages_number):
+    message_number = len(messages)
+    efficiencies = np.zeros(message_number)
+    for i in range(message_number):
         message = messages[i]
         y = ugly_trellis(H, sub_h, x, message)
         distortion = get_distortion(x, y)
@@ -164,7 +164,7 @@ def get_h(sub_h, payload_size, message_size):
     sub_width = len(sub_h[0])
     h_width = message_size
     h_height = payload_size
-    h = np.zeros((h_height, h_width), dtype=int)
+    h = np.zeros((h_height, h_width), dtype='int8')
 
     def place_submatrix(h_row, h_column):
         for row in range(sub_height):
@@ -386,4 +386,12 @@ if __name__ == '__main__':
             embed()
             extract(h)
         case '2':
-            get_random_payloads()
+            messages = get_random_payloads()
+            for msg in messages:
+                message = msg
+                print("Generating matrix H...\n")
+                h = get_h(sub_h, len(message), len(cover))
+                print("H = \n" + str(h))
+
+                embed()
+                # calculate efficiency for each embedding, add to array, project
