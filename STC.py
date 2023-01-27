@@ -9,7 +9,16 @@ y = []
 cover = []
 path = ''
 
-def get_user_input(cover, sub_width):
+def get_user_input():
+
+    while True:
+        option = input("Would you like to choose a message to hide (1) or to generate random messages and see a graphical representations of their embedding efficiencies (2)? ")
+        if (not (option == '1' or option == '2')):
+            print("Unrecognized input. Try again.")
+        else:
+            return option
+
+def get_user_message(sub_width):
 
     def txt_to_bin(str):
         txt_bits = []
@@ -32,7 +41,7 @@ def get_user_input(cover, sub_width):
             for j in range(len(str_bits)):
                 message[i * 12 + j] = str_bits[j]
         return message
-
+        
     while True:
         txt_input = input("What would you like to hide today? ")
         bin_input = txt_to_bin(txt_input)
@@ -42,6 +51,9 @@ def get_user_input(cover, sub_width):
             size = len(cover)//sub_width
             str(bin_input).ljust(size - len(bin_input), '0')
             return bin_input
+
+def get_random_payloads():
+    pass
 
 def strict_integer_input(output):
     while True:
@@ -74,7 +86,7 @@ def select_img():
             print("\nUp to 10 only!")
         else:
             break
-    path = './' + str(cover_number) + '.pgm'
+    path = './' + str(cover_number) + '.png'
     img_bits = img_to_lsb(path)
     print("Cover: " + str(img_bits) + '\n')
     return img_bits
@@ -362,11 +374,16 @@ if __name__ == '__main__':
     tree = init_trellis()
 
     cover = select_img()
-    message = get_user_input(cover, sub_width)
+    option = get_user_input()
 
-    print("Generating matrix H...\n")
-    h = get_h(sub_h, len(message), len(cover))
-    print("H = \n" + str(h))
+    match(option):
+        case '1':
+            message = get_user_message(sub_width)
+            print("Generating matrix H...\n")
+            h = get_h(sub_h, len(message), len(cover))
+            print("H = \n" + str(h))
 
-    embed()
-    extract(h)
+            embed()
+            extract(h)
+        case '2':
+            get_random_payloads()
