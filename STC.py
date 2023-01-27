@@ -267,12 +267,12 @@ def get_y(node):
         y.append(cover[i])
 
     print("\nCalculating stego object done.")
-    print("Opening image...")
-    display_img()
+    print("Opening both images...")
+    display_imgs()
 
-def display_img():
+def display_imgs():
     img = Image.open(path).convert('L')
-    img_pixels = np.asarray(img)
+    img_pixels = np.asarray(img, 'uint8')
 
     def get_stego_pixels():
         global path, cover
@@ -299,10 +299,11 @@ def display_img():
                 matrix[i].append(vector[i * cover_rows + j])
         return matrix
 
-
+    cover_img = Image.fromarray(img_pixels, 'L')
+    cover_img.show(title="Cover image")
     stego_pixels = get_stego_pixels()
     stego_img = Image.fromarray(stego_pixels, 'L')
-    stego_img.show()
+    stego_img.show(title="Stego image")
 
 def extract(h):
 
