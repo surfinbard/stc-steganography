@@ -125,7 +125,7 @@ def random_submatrix_distortions():
     x_label = "sizes: "
     for i in range(len(sizes)):
         x_label += "(" + str(sizes[i][0]) + "x" + str(sizes[i][1]) + ")"
-        if(i != len(sizes - 1)):
+        if(i != len(sizes) - 1):
             x_label += ", "
 
     generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
