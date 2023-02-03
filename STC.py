@@ -389,5 +389,9 @@ if __name__ == '__main__':
                 h = get_h(sub_h, len(message), len(cover))
                 print("H = \n" + str(h))
 
+                cover_index = 0
+                message_index = 0
+                y = []
+                tree = init_trellis()
                 embed()
                 # calculate efficiency for each embedding, add to array, project
