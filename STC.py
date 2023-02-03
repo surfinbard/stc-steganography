@@ -50,8 +50,8 @@ def get_user_message(sub_width):
         if len(bin_input) > len(cover):
             print("\nThis message is too large for the selected cover! Try something shorter.")
         else:
-            size = len(cover)//sub_width
-            str(bin_input).ljust(size - len(bin_input), '0')
+            #size = len(cover)//sub_width
+            #str(bin_input).ljust(size - len(bin_input), '0')
             return bin_input
 
 def get_random_payloads():
