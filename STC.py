@@ -342,7 +342,7 @@ def extract(h):
             txt_bits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
         return txt_bits
 
-    m = np.matmul(h, y)
+    m = np.matmul(h, np.mod(np.asarray(stego_img),2).flatten())
     for i in range(len(m)):
         m[i] %= 2
 
