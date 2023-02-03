@@ -473,10 +473,10 @@ if __name__ == '__main__':
             x_label = "sizes : "
             for i in range(len(sizes)):
                 x_label += "(" + str(sizes[i][0]) + "x" + str(sizes[i][1]) + ")"
-                if(i != len(sizes)):
+                if(i != len(sizes - 1)):
                     x_label += ", "
 
-            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
+            generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
         case '4':
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
@@ -502,7 +502,7 @@ if __name__ == '__main__':
                 abscissa.append(i + 1)
                 ordinate.append(efficiency)
             ordinate = -np.sort(-np.asarray(ordinate))
-            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
+            generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
         case '5':
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
