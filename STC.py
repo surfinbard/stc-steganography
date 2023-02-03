@@ -95,7 +95,7 @@ def select_img():
 
 def img_to_lsb(path):
     img = Image.open(path).convert('L')
-    return  np.asarray(img).flatten()
+    return  np.mod(np.asarray(img), 2).flatten()
 
 def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, message_number, path = ()):
     if(path):
