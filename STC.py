@@ -16,8 +16,8 @@ stego_img = None
 def get_user_input():
 
     while True:
-        option = input("Would you like to choose a message to hide (1) \nor to generate random messages and see a graphical representations of their embedding efficiencies (2)? ")
-        if (not (option == '1' or option == '2')):
+        option = input("Would you like to\n    (1) choose a message to hide\n    (2) generate random messages and see a graphical representations of their embedding efficiencies\n    (3) generate random submatrix of different size and see a graphical representations of their distortions\n")
+        if (not (option == '1' or option == '2' or option == '3')):
             print("Unrecognized input. Try again.")
         else:
             return option
@@ -85,9 +85,9 @@ def strict_binary_input(output):
 def select_img():
     global path
     while True:
-        cover_number = strict_integer_input("\nSelect image as cover [1-12]:")
-        if (cover_number > 12):
-            print("\nUp to 12 only!")
+        cover_number = strict_integer_input("\nSelect image as cover [1-13]:")
+        if (cover_number > 13):
+            print("\nUp to 13 only!")
         else:
             break
     path = './img/' + str(cover_number) + '.pgm'
@@ -411,10 +411,10 @@ if __name__ == '__main__':
             print("Which give an efficiency of :", get_efficiency(len(message), distortion))
         case '2':
             show_img = False
-            message_number = 5
+            message_number = 30
             abscissa = []
             ordinate = []
-            for inverse_alpha in range(40, 60 + 2, 2):
+            for inverse_alpha in range(4, 10 + 2, 2):
                 print("1/alpha =", inverse_alpha)
                 alpha = 1 / inverse_alpha
                 message_length = math.floor(len(cover) * alpha) 
@@ -429,6 +429,32 @@ if __name__ == '__main__':
                     embed()
                     distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                     efficiencies.append(get_efficiency(message_length, distortion))
+                    print("Message length =", message_length, ", distortion =", distortion, ", efficiency =", efficiencies[i])
                 abscissa.append(inverse_alpha)
-                ordinate.append(np.asarray(efficiencies).mean())
-            generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1/alpha", "efficiency")
+                ordinate.append(np.median(np.asarray(efficiencies)))
+            generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
+        case '3':
+            show_img = False
+            sizes = np.asarray([(2, 2), (3, 5), (4, 5), (6, 7)])
+            sub_hs = []
+            print("Generating submatrix")
+            for s in sizes:
+                sub_hs.append(get_random_sub_h(s[0], s[1]))
+            abscissa = []
+            ordinate = []
+            alpha = 0.1
+            message_length = math.floor(len(cover) * alpha)
+            message = get_random_payloads(1, message_length)[0]
+            for i in range(len(sub_hs)):
+                print("submatrix", i, "/", len(sub_hs))
+                sub_h = sub_hs[i]
+                sub_height = len(sub_h)
+                sub_width = len(sub_h[0])
+                print("Generating H")
+                h = get_h(sub_h, len(message), len(cover))
+                init_global_variables()
+                embed()
+                distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+                abscissa.append(i)
+                ordinate.append(distortion)
+            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, "", "distortion")
