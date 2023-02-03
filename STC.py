@@ -124,8 +124,10 @@ def get_random_sub_h(sub_height, sub_width):
         sub_h[sub_height - 1][np.random.randint(sub_width)] = 1
     return sub_h
 
-def get_efficiency(pixels, alpha, distortion):
-    return pixels * alpha / (distortion + 1)
+def get_efficiency(message_length, distortion):
+    if(distortion == 0):
+        return message_length / 0.1
+    return message_length / distortion
 
 def get_avg_efficiency(x, H, sub_h, messages, edge_size):
     message_number = len(messages)
@@ -134,7 +136,7 @@ def get_avg_efficiency(x, H, sub_h, messages, edge_size):
         message = messages[i]
         y = ugly_trellis(H, sub_h, x, message)
         distortion = get_distortion(x, y)
-        efficiencies[i] = get_efficiency(edge_size ** 2, alpha, distortion)
+        efficiencies[i] = get_efficiency(len(message), distortion)
     avg_efficiency = np.mean(efficiencies)
     return avg_efficiency
 
