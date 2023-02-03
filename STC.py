@@ -14,10 +14,14 @@ path = ''
 stego_img = None
 
 def get_user_input():
-
+    output = "Would you like to\n"
+    output += "    (1) choose a message to hide\n"
+    output += "    (2) generate random messages and see a graphical representations of their embedding efficiencies\n"
+    output += "    (3) generate random submatrix of different size and see a graphical representations of their distortions\n"
+    output += "    (4) generate random submatrix of same size and see a graphical representations of their efficiencies\n"
     while True:
-        option = input("Would you like to\n    (1) choose a message to hide\n    (2) generate random messages and see a graphical representations of their embedding efficiencies\n    (3) generate random submatrix of different size and see a graphical representations of their distortions\n")
-        if (not (option == '1' or option == '2' or option == '3')):
+        option = input(output)
+        if (not (option == '1' or option == '2' or option == '3' or option == '4')):
             print("Unrecognized input. Try again.")
         else:
             return option
@@ -462,7 +466,7 @@ if __name__ == '__main__':
                 init_global_variables()
                 embed()
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
-                abscissa.append(i)
+                abscissa.append(i + 1)
                 ordinate.append(distortion)
 
             x_label = "sizes : "
@@ -472,3 +476,29 @@ if __name__ == '__main__':
                     x_label += ", "
 
             generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
+        case '4':
+            sub_width = strict_integer_input("\nSubmatrix width: ")
+            sub_height = strict_integer_input("Submatrix height: ")
+            sub_hs = []
+            submatrix_number = 100
+            print("Generating submatrix")
+            for i in range(submatrix_number):
+                sub_hs.append(get_random_sub_h(sub_width, sub_height))
+            abscissa = []
+            ordinate = []
+            alpha = 0.1
+            message_length = math.floor(len(cover) * alpha)
+            message = get_random_payloads(1, message_length)[0]
+            for i in range(len(sub_hs)):
+                print("submatrix", i, "/", len(sub_hs))
+                sub_h = sub_hs[i]
+                print("Generating H")
+                h = get_h(sub_h, len(message), len(cover))
+                init_global_variables()
+                embed()
+                distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+                efficiency = get_efficiency(message_length, distortion)
+                abscissa.append(i + 1)
+                ordinate.append(efficiency)
+            ordinate = -np.sort(-np.asarray(ordinate))
+            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
