@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -84,9 +85,9 @@ def strict_binary_input(output):
 def select_img():
     global path
     while True:
-        cover_number = strict_integer_input("\nSelect image as cover [1-10]:")
-        if (cover_number > 10):
-            print("\nUp to 10 only!")
+        cover_number = strict_integer_input("\nSelect image as cover [1-12]:")
+        if (cover_number > 12):
+            print("\nUp to 12 only!")
         else:
             break
     path = './img/' + str(cover_number) + '.pgm'
@@ -278,7 +279,8 @@ def get_y(node):
         y.append(cover[i])
 
     print("\nCalculating stego object done.")
-    print("Opening both images...")
+    if(show_img):
+        print("Opening both images...")
     display_imgs()
 
 def display_imgs():
@@ -314,10 +316,12 @@ def display_imgs():
         return matrix
 
     cover_img = Image.fromarray(img_pixels, 'L')
-    cover_img.show(title="Cover image")
+    if(show_img):
+        cover_img.show(title="Cover image")
     stego_pixels = get_stego_pixels()
     stego_img = Image.fromarray(stego_pixels, 'L')
-    stego_img.show(title="Stego image")
+    if(show_img):
+        stego_img.show(title="Stego image")
 
 def extract(h):
 
@@ -366,20 +370,30 @@ def generate_graph(title, x, y, x_label, y_label):
 def calculate_distortion(cover_img, stego_img):
     return np.absolute(np.asarray(cover_img).flatten() - np.asarray(stego_img).flatten()).sum()
 
+def init_global_variables():
+    global cover_index, message_index, y, tree, stego_img
+    cover_index = 0
+    message_index = 0
+    y = []
+    tree = init_trellis()
+    stego_img = []
+
 if __name__ == '__main__':
 
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
     print("We hope this command-line finds you well.\n")
 
 
-    print("Submatrix currently fixed at [[1, 0], [1, 1]].")
     sub_h = [[1, 0], [1, 1]]
-    sub_height = 2
-    sub_width = 2
+    sub_h = get_random_sub_h(4, 7)
+    print("Submatrix currently fixed at\n", np.asarray(sub_h))
+    sub_height = len(sub_h)
+    sub_width = len(sub_h[0])
     tree = init_trellis()
 
     cover = select_img()
     option = get_user_input()
+    show_img = True
 
     match(option):
         case '1':
@@ -396,16 +410,25 @@ if __name__ == '__main__':
             print("For a message of length :", len(message))
             print("Which give an efficiency of :", get_efficiency(len(message), distortion))
         case '2':
-            messages = get_random_payloads(10, 48)
-            for msg in messages:
-                message = msg
-                print("Generating matrix H...\n")
-                h = get_h(sub_h, len(message), len(cover))
-                print("H = \n" + str(h))
-
-                cover_index = 0
-                message_index = 0
-                y = []
-                tree = init_trellis()
-                embed()
-                # calculate efficiency for each embedding, add to array, project
+            show_img = False
+            message_number = 5
+            abscissa = []
+            ordinate = []
+            for inverse_alpha in range(40, 60 + 2, 2):
+                print("1/alpha =", inverse_alpha)
+                alpha = 1 / inverse_alpha
+                message_length = math.floor(len(cover) * alpha) 
+                messages = get_random_payloads(message_number, message_length)
+                h = get_h(sub_h, len(messages[0]), len(cover))
+                efficiencies = []
+                for i in range(message_number):
+                    print("    message", i, "/", message_number)
+                    message = messages[i]
+                    init_global_variables()
+                    
+                    embed()
+                    distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+                    efficiencies.append(get_efficiency(message_length, distortion))
+                abscissa.append(inverse_alpha)
+                ordinate.append(np.asarray(efficiencies).mean())
+            generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1/alpha", "efficiency")
