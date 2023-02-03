@@ -54,12 +54,8 @@ def get_user_message(sub_width):
             #str(bin_input).ljust(size - len(bin_input), '0')
             return bin_input
 
-def get_random_payloads():
-    size = len(cover)//sub_width
-    messages = []
-    for i in range(10):
-        messages.append(str(BitArray([random.randint(0, 1) for _ in range(42)])).ljust(size, '0'))
-    return messages
+def get_random_payloads(message_number, message_length):
+    return np.random.randint(0, 2, (message_number, message_length))
 
 def strict_integer_input(output):
     while True:
@@ -386,7 +382,7 @@ if __name__ == '__main__':
             embed()
             extract(h)
         case '2':
-            messages = get_random_payloads()
+            messages = get_random_payloads(10, 48)
             for msg in messages:
                 message = msg
                 print("Generating matrix H...\n")
