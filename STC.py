@@ -19,9 +19,10 @@ def get_user_input():
     output += "    (2) generate random messages and see a graphical representations of their embedding efficiencies\n"
     output += "    (3) generate random submatrix of different size and see a graphical representations of their distortions\n"
     output += "    (4) generate random submatrix of same size and see a graphical representations of their efficiencies\n"
+    output += "    (5) found the best submatrix\n"
     while True:
         option = input(output)
-        if (not (option == '1' or option == '2' or option == '3' or option == '4')):
+        if (not (option == '1' or option == '2' or option == '3' or option == '4' or option == '5')):
             print("Unrecognized input. Try again.")
         else:
             return option
@@ -147,8 +148,8 @@ def get_avg_efficiency(x, H, sub_h, messages, edge_size):
 
 def get_sub_h():
     sub_h = []
-    sub_width = strict_integer_input("\nSubmatrix width: ")
-    sub_height = strict_integer_input("Submatrix height: ")
+    sub_height = strict_integer_input("\nSubmatrix height: ")
+    sub_width = strict_integer_input("Submatrix width: ")
 
     while True:
             option = input("Would you like to\n    (1) generate a random submatrix\n    (2) create manually a submatriix\n")
