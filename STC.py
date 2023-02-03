@@ -87,14 +87,15 @@ def strict_binary_input(output):
             break
     return int(value)
 
-def select_img():
+def select_img(cover_number = None):
     global path
-    while True:
-        cover_number = strict_integer_input("\nSelect image as cover [1-13]:")
-        if (cover_number > 13):
-            print("\nUp to 13 only!")
-        else:
-            break
+    if(cover_number == None):
+        while True:
+            cover_number = strict_integer_input("\nSelect image as cover [1-13]:")
+            if (cover_number > 13):
+                print("\nUp to 13 only!")
+            else:
+                break
     path = './img/' + str(cover_number) + '.pgm'
     img_bits = img_to_lsb(path)
     print("Cover: " + str(img_bits) + '\n')
@@ -396,24 +397,24 @@ if __name__ == '__main__':
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
     print("We hope this command-line finds you well.\n")
 
-
-    sub_h = get_sub_h()
-    print("Submatrix currently fixed at\n", np.asarray(sub_h))
-    sub_height = len(sub_h)
-    sub_width = len(sub_h[0])
-    tree = init_trellis()
-
-    cover = select_img()
     option = get_user_input()
-    show_img = True
 
+    show_img = True
     match(option):
         case '1':
+            cover = select_img()
+            
+            sub_h = get_sub_h()
+            print("Submatrix currently fixed at\n", np.asarray(sub_h))
+            sub_height = len(sub_h)
+            sub_width = len(sub_h[0])
+
             message = get_user_message(sub_width)
             print("Generating matrix H...\n")
             h = get_h(sub_h, len(message), len(cover))
             print("H = \n" + str(h))
 
+            init_global_variables()
             embed()
             extract(h)
 
@@ -423,6 +424,13 @@ if __name__ == '__main__':
             print("Which give an efficiency of :", get_efficiency(len(message), distortion))
         case '2':
             show_img = False
+            cover = select_img(13)
+            
+            sub_h = get_sub_h()
+            print("Submatrix currently fixed at\n", np.asarray(sub_h))
+            sub_height = len(sub_h)
+            sub_width = len(sub_h[0])
+
             message_number = 30
             abscissa = []
             ordinate = []
@@ -436,9 +444,10 @@ if __name__ == '__main__':
                 for i in range(message_number):
                     print("    message", i, "/", message_number)
                     message = messages[i]
-                    init_global_variables()
                     
+                    init_global_variables()
                     embed()
+
                     distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                     efficiencies.append(get_efficiency(message_length, distortion))
                     print("Message length =", message_length, ", distortion =", distortion, ", efficiency =", efficiencies[i])
@@ -446,6 +455,7 @@ if __name__ == '__main__':
                 ordinate.append(np.median(np.asarray(efficiencies)))
             generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
         case '3':
+            cover = select_img(13)
             show_img = False
             sizes = np.asarray([(2, 2), (3, 5), (4, 7), (6, 7)])
             sub_hs = []
@@ -464,8 +474,10 @@ if __name__ == '__main__':
                 sub_width = len(sub_h[0])
                 print("Generating H")
                 h = get_h(sub_h, len(message), len(cover))
+
                 init_global_variables()
                 embed()
+
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                 abscissa.append(i + 1)
                 ordinate.append(distortion)
@@ -478,6 +490,7 @@ if __name__ == '__main__':
 
             generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
         case '4':
+            cover = select_img(13)
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
             sub_hs = []
@@ -495,8 +508,10 @@ if __name__ == '__main__':
                 sub_h = sub_hs[i]
                 print("Generating H")
                 h = get_h(sub_h, len(message), len(cover))
+
                 init_global_variables()
                 embed()
+
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                 efficiency = get_efficiency(message_length, distortion)
                 abscissa.append(i + 1)
@@ -504,6 +519,7 @@ if __name__ == '__main__':
             ordinate = -np.sort(-np.asarray(ordinate))
             generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
         case '5':
+            cover = select_img(13)
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
             sub_hs = []
@@ -520,8 +536,10 @@ if __name__ == '__main__':
                 sub_h = sub_hs[i]
                 print("Generating H")
                 h = get_h(sub_h, len(message), len(cover))
+
                 init_global_variables()
                 embed()
+
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                 efficiency = get_efficiency(message_length, distortion)
                 efficiencies.append(efficiency)
