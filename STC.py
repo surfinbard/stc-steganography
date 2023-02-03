@@ -390,8 +390,11 @@ if __name__ == '__main__':
 
             embed()
             extract(h)
-            print("With a distortion of :", calculate_distortion(Image.open(path).convert('L'), stego_img))
+
+            distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+            print("With a distortion of :", distortion)
             print("For a message of length :", len(message))
+            print("Which give an efficiency of :", get_efficiency(len(message), distortion))
         case '2':
             messages = get_random_payloads(10, 48)
             for msg in messages:
