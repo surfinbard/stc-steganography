@@ -426,8 +426,8 @@ if __name__ == '__main__':
             message_number = 30
             abscissa = []
             ordinate = []
-            for inverse_alpha in range(4, 10 + 2, 2):
-                print("1/alpha =", inverse_alpha)
+            for inverse_alpha in range(10, 20 + 2, 2):
+                print("1 / alpha =", inverse_alpha)
                 alpha = 1 / inverse_alpha
                 message_length = math.floor(len(cover) * alpha) 
                 messages = get_random_payloads(message_number, message_length)
@@ -478,8 +478,8 @@ if __name__ == '__main__':
 
             generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
         case '4':
-            sub_width = strict_integer_input("\nSubmatrix width: ")
-            sub_height = strict_integer_input("Submatrix height: ")
+            sub_height = strict_integer_input("\nSubmatrix height: ")
+            sub_width = strict_integer_input("Submatrix width: ")
             sub_hs = []
             submatrix_number = 100
             print("Generating submatrix")
@@ -503,3 +503,26 @@ if __name__ == '__main__':
                 ordinate.append(efficiency)
             ordinate = -np.sort(-np.asarray(ordinate))
             generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
+        case '5':
+            sub_height = strict_integer_input("\nSubmatrix height: ")
+            sub_width = strict_integer_input("Submatrix width: ")
+            sub_hs = []
+            submatrix_number = 100
+            print("Generating submatrix")
+            for i in range(submatrix_number):
+                sub_hs.append(get_random_sub_h(sub_width, sub_height))
+            efficiencies = []
+            alpha = 0.1
+            message_length = math.floor(len(cover) * alpha)
+            message = get_random_payloads(1, message_length)[0]
+            for i in range(len(sub_hs)):
+                print("submatrix", i, "/", len(sub_hs))
+                sub_h = sub_hs[i]
+                print("Generating H")
+                h = get_h(sub_h, len(message), len(cover))
+                init_global_variables()
+                embed()
+                distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+                efficiency = get_efficiency(message_length, distortion)
+                efficiencies.append(efficiency)
+            print("Best submatrix found :\n", sub_hs[np.argmax(efficiencies)])
