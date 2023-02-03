@@ -16,10 +16,10 @@ stego_img = None
 def get_user_input():
     output = "Would you like to\n"
     output += "    (1) choose a message to hide\n"
-    output += "    (2) generate random messages and see a graphical representations of their embedding efficiencies\n"
-    output += "    (3) generate random submatrix of different size and see a graphical representations of their distortions\n"
-    output += "    (4) generate random submatrix of same size and see a graphical representations of their efficiencies\n"
-    output += "    (5) found the best submatrix\n"
+    output += "    (2) generate random messages and see graphical representations of their embedding efficiencies\n"
+    output += "    (3) generate random submatrix of different size and see graphical representations of their distortions\n"
+    output += "    (4) generate random submatrix of same size and see graphical representations of their efficiencies\n"
+    output += "    (5) look for the optimal choice of submatrix\n"
     while True:
         option = input(output)
         if (not (option == '1' or option == '2' or option == '3' or option == '4' or option == '5')):
@@ -153,7 +153,7 @@ def get_sub_h():
     sub_width = strict_integer_input("Submatrix width: ")
 
     while True:
-            option = input("Would you like to\n    (1) generate a random submatrix\n    (2) create manually a submatriix\n")
+            option = input("Would you like to\n    (1) generate a randomized submatrix\n    (2) manually input a submatrix\n")
             if (not (option == '1' or option == '2')):
                 print("Unrecognized input. Try again.")
             else:
@@ -314,7 +314,7 @@ def display_imgs():
             stego_pixels.append([])
             for j in range(len(img_pixels[0])):
                 stego_pixels[i].append(img_pixels[i][j] + difference_matrix[i][j])
-                # Instead of adding 1, we retrive 1 because 255 is the maximum
+                # Instead of adding 1, we decrement the maximum (255) by 1
                 if(stego_pixels[i][j] == 256):
                     stego_pixels[i][j] = 254
         return np.asarray(stego_pixels, 'uint8')
@@ -419,9 +419,9 @@ if __name__ == '__main__':
             extract(h)
 
             distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
-            print("With a distortion of :", distortion)
-            print("For a message of length :", len(message))
-            print("Which give an efficiency of :", get_efficiency(len(message), distortion))
+            print("Distortion:", distortion)
+            print("Message length:", len(message))
+            print("Result in efficiency:", get_efficiency(len(message), distortion))
         case '2':
             show_img = False
             cover = select_img(13)
@@ -435,7 +435,7 @@ if __name__ == '__main__':
             abscissa = []
             ordinate = []
             for inverse_alpha in range(10, 20 + 2, 2):
-                print("1 / alpha =", inverse_alpha)
+                print("1 / alpha = ", inverse_alpha)
                 alpha = 1 / inverse_alpha
                 message_length = math.floor(len(cover) * alpha) 
                 messages = get_random_payloads(message_number, message_length)
@@ -450,7 +450,7 @@ if __name__ == '__main__':
 
                     distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                     efficiencies.append(get_efficiency(message_length, distortion))
-                    print("Message length =", message_length, ", distortion =", distortion, ", efficiency =", efficiencies[i])
+                    print("Message length = ", message_length, ", distortion = ", distortion, ", efficiency = ", efficiencies[i])
                 abscissa.append(inverse_alpha)
                 ordinate.append(np.median(np.asarray(efficiencies)))
             generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
@@ -482,7 +482,7 @@ if __name__ == '__main__':
                 abscissa.append(i + 1)
                 ordinate.append(distortion)
 
-            x_label = "sizes : "
+            x_label = "sizes: "
             for i in range(len(sizes)):
                 x_label += "(" + str(sizes[i][0]) + "x" + str(sizes[i][1]) + ")"
                 if(i != len(sizes - 1)):
@@ -543,4 +543,4 @@ if __name__ == '__main__':
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                 efficiency = get_efficiency(message_length, distortion)
                 efficiencies.append(efficiency)
-            print("Best submatrix found :\n", sub_hs[np.argmax(efficiencies)])
+            print("Best submatrix found:\n", sub_hs[np.argmax(efficiencies)])
