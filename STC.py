@@ -146,16 +146,24 @@ def get_sub_h():
     sub_width = strict_integer_input("\nSubmatrix width: ")
     sub_height = strict_integer_input("Submatrix height: ")
 
-    print("We're now building the submatrix, element by element.\n")
+    while True:
+            option = input("Would you like to\n    (1) generate a random submatrix\n    (2) create manually a submatriix\n")
+            if (not (option == '1' or option == '2')):
+                print("Unrecognized input. Try again.")
+            else:
+                break
+    match option:
+        case '1':
+            print("Generating submatrix...\n")
+            sub_h = get_random_sub_h(sub_height, sub_width)
+        case '2':
+            print("We're now building the submatrix, element by element.\n")
 
-    for row in range(sub_height):
-        sub_h.append([])
-        for column in range(sub_width):
-            sub_h[row].append(strict_binary_input(f'Enter binary number for row {row}, column {column}: '))
-
-    print("Inputs done!\n")
-    print("Generating submatrix...\n")
-    print(sub_h)
+            for row in range(sub_height):
+                sub_h.append([])
+                for column in range(sub_width):
+                    sub_h[row].append(strict_binary_input(f'Enter binary number for row {row}, column {column}: '))
+            print("Inputs done!\n")
     return sub_h
 
 def get_h(sub_h, payload_size, message_size):
@@ -384,8 +392,7 @@ if __name__ == '__main__':
     print("We hope this command-line finds you well.\n")
 
 
-    sub_h = [[1, 0], [1, 1]]
-    sub_h = get_random_sub_h(4, 7)
+    sub_h = get_sub_h()
     print("Submatrix currently fixed at\n", np.asarray(sub_h))
     sub_height = len(sub_h)
     sub_width = len(sub_h[0])
