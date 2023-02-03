@@ -381,7 +381,7 @@ def generate_graph(title, x, y, x_label, y_label):
     plt.show()
 
 def calculate_distortion(cover_img, stego_img):
-    return np.absolute(np.asarray(cover_img).flatten() - np.asarray(stego_img).flatten()).sum()
+    return np.absolute(np.asarray(cover_img, np.int16).flatten() - np.asarray(stego_img, np.int16).flatten()).sum()
 
 def init_global_variables():
     global cover_index, message_index, y, tree, stego_img
