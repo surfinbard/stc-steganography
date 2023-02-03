@@ -43,7 +43,7 @@ def get_user_message(sub_width):
             for j in range(len(str_bits)):
                 message[i * 12 + j] = str_bits[j]
         return message
-        
+
     while True:
         txt_input = input("What would you like to hide today? ")
         bin_input = txt_to_bin(txt_input)
@@ -92,7 +92,7 @@ def select_img():
             print("\nUp to 10 only!")
         else:
             break
-    path = './' + str(cover_number) + '.png'
+    path = './img/' + str(cover_number) + '.pgm'
     img_bits = img_to_lsb(path)
     print("Cover: " + str(img_bits) + '\n')
     return img_bits
