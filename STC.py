@@ -442,7 +442,7 @@ if __name__ == '__main__':
             generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
         case '3':
             show_img = False
-            sizes = np.asarray([(2, 2), (3, 5), (4, 5), (6, 7)])
+            sizes = np.asarray([(2, 2), (3, 5), (4, 7), (6, 7)])
             sub_hs = []
             print("Generating submatrix")
             for s in sizes:
@@ -464,4 +464,11 @@ if __name__ == '__main__':
                 distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
                 abscissa.append(i)
                 ordinate.append(distortion)
-            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, "", "distortion")
+
+            x_label = "sizes : "
+            for i in range(len(sizes)):
+                x_label += "(" + str(sizes[i][0]) + "x" + str(sizes[i][1]) + ")"
+                if(i != len(sizes)):
+                    x_label += ", "
+
+            generate_graph("For n = " + str(len(cover)) + " alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
