@@ -38,6 +38,7 @@ def get_user_input():
             return option
 
 def arbitrary_payload():
+    global cover, h, sub_height, sub_width, message
     cover = select_img()
     sub_h = get_sub_h()
     print("Submatrix currently fixed at\n", np.asarray(sub_h))
@@ -59,6 +60,7 @@ def arbitrary_payload():
     print("Result in efficiency:", get_efficiency(len(message), distortion))
 
 def random_payload_efficiencies():
+    global cover, h, sub_height, sub_width, message, show_img
     show_img = False
     cover = select_img(13)
     
@@ -92,6 +94,7 @@ def random_payload_efficiencies():
     generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
 
 def random_submatrix_distortions():
+    global cover, h, sub_height, sub_width, message, show_img
     cover = select_img(13)
     show_img = False
     sizes = np.asarray([(2, 2), (3, 5), (4, 7), (6, 7)])
@@ -128,6 +131,7 @@ def random_submatrix_distortions():
     generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
 
 def random_submatrix_efficiencies():
+    global cover, h, sub_height, sub_width, message, show_img
     cover = select_img(13)
     show_img = False
     sub_height = strict_integer_input("\nSubmatrix height: ")
@@ -159,6 +163,7 @@ def random_submatrix_efficiencies():
     generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
 
 def get_optimal_submatrix():
+    global cover, h, sub_height, sub_width, message, show_img
     cover = select_img(13)
     show_img = False
     sub_height = strict_integer_input("\nSubmatrix height: ")
