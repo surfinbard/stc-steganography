@@ -491,6 +491,7 @@ if __name__ == '__main__':
             generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
         case '4':
             cover = select_img(13)
+            show_img = False
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
             sub_hs = []
@@ -520,6 +521,7 @@ if __name__ == '__main__':
             generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
         case '5':
             cover = select_img(13)
+            show_img = False
             sub_height = strict_integer_input("\nSubmatrix height: ")
             sub_width = strict_integer_input("Submatrix width: ")
             sub_hs = []
