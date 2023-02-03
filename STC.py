@@ -270,24 +270,6 @@ def img_to_lsb(path):
     img = Image.open(path).convert('L')
     return  np.mod(np.asarray(img), 2).flatten()
 
-def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, message_number, path = ()):
-    if(path):
-        image = open_image(path)
-    else:
-        image = generate_random_img()
-    pixels = get_pixels(image)
-    x = pixels_to_LSB(pixels)
-    message_length = len(pixels) * alpha
-    messages = get_random_msg(message_length, message_number)
-    submatrixes = np.empty((iteration_number, sub_height, sub_width), "uint8")
-    avg_efficiencies = np.empty(iteration_number)
-    for i in range(iteration_number):
-        sub_h = get_random_sub_h(sub_height, sub_width)
-        submatrixes[i] = sub_h
-        H = createH(sub_h)
-        avg_efficiencies[i] = get_avg_efficiency(x, H, sub_h, messages, edge_size)
-    return submatrixes[np.argmax(avg_efficiencies)]
-
 def get_random_sub_h(sub_height, sub_width):
     sub_h = np.random.randint(0, 2, (sub_height, sub_width), "uint8")
     if(not np.isin(1, sub_h[0])):
@@ -300,17 +282,6 @@ def get_efficiency(message_length, distortion):
     if(distortion == 0):
         return message_length / 0.1
     return message_length / distortion
-
-def get_avg_efficiency(x, H, sub_h, messages, edge_size):
-    message_number = len(messages)
-    efficiencies = np.zeros(message_number)
-    for i in range(message_number):
-        message = messages[i]
-        y = ugly_trellis(H, sub_h, x, message)
-        distortion = get_distortion(x, y)
-        efficiencies[i] = get_efficiency(len(message), distortion)
-    avg_efficiency = np.mean(efficiencies)
-    return avg_efficiency
 
 def get_sub_h():
     sub_h = []
