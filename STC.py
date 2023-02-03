@@ -286,9 +286,7 @@ def display_imgs():
         global path, cover
         stego_pixels = []
         difference = []
-
-        for i in range(len(cover)):
-            difference.append(y[i] - cover[i])
+        difference = np.absolute(y - cover)
         difference_matrix = vector_to_matrix(difference)
 
         for i in range(len(img_pixels)):
