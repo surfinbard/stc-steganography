@@ -10,6 +10,7 @@ message_index = 0
 y = []
 cover = []
 path = ''
+stego_img = None
 
 def get_user_input():
 
@@ -279,6 +280,8 @@ def get_y(node):
     display_imgs()
 
 def display_imgs():
+    global stego_img
+
     img = Image.open(path).convert('L')
     img_pixels = np.asarray(img, 'uint8')
 
@@ -355,6 +358,9 @@ def generate_graph(title, x, y, x_label, y_label):
     plt.title(title)
     plt.show()
 
+def calculate_distortion(cover_img, stego_img):
+    return np.absolute(np.asarray(cover_img).flatten() - np.asarray(stego_img).flatten()).sum()
+
 if __name__ == '__main__':
 
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
@@ -379,6 +385,7 @@ if __name__ == '__main__':
 
             embed()
             extract(h)
+            print("With a distortion of :", calculate_distortion(Image.open(path).convert('L'), stego_img))
         case '2':
             messages = get_random_payloads(10, 48)
             for msg in messages:
