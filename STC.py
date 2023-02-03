@@ -296,6 +296,9 @@ def display_imgs():
             stego_pixels.append([])
             for j in range(len(img_pixels[0])):
                 stego_pixels[i].append(img_pixels[i][j] + difference_matrix[i][j])
+                # Instead of adding 1, we retrive 1 because 255 is the maximum
+                if(stego_pixels[i][j] == 256):
+                    stego_pixels[i][j] = 254
         return np.asarray(stego_pixels, 'uint8')
 
     def vector_to_matrix(vector):
