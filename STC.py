@@ -136,7 +136,7 @@ def random_submatrix_efficiencies():
     submatrix_number = 100
     print("Generating submatrix")
     for i in range(submatrix_number):
-        sub_hs.append(get_random_sub_h(sub_width, sub_height))
+        sub_hs.append(get_random_sub_h(sub_height, sub_width))
     abscissa = []
     ordinate = []
     alpha = 0.1
@@ -167,7 +167,7 @@ def get_optimal_submatrix():
     submatrix_number = 100
     print("Generating submatrix")
     for i in range(submatrix_number):
-        sub_hs.append(get_random_sub_h(sub_width, sub_height))
+        sub_hs.append(get_random_sub_h(sub_height, sub_width))
     efficiencies = []
     alpha = 0.1
     message_length = math.floor(len(cover) * alpha)
