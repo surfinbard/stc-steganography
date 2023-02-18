@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,15 +11,186 @@ message_index = 0
 y = []
 cover = []
 path = ''
+stego_img = None
+show_img = True
+tree = None
+
+def reset_global_vars(sub_height):
+    global cover_index, message_index, y, tree, stego_img
+    cover_index = 0
+    message_index = 0
+    y = []
+    tree = init_trellis(sub_height)
+    stego_img = []
 
 def get_user_input():
-
+    output = "Would you like to\n"
+    output += "    (1) choose a message to hide\n"
+    output += "    (2) generate random messages and see graphical representations of their embedding efficiencies\n"
+    output += "    (3) generate random submatrix of different size and see graphical representations of their distortions\n"
+    output += "    (4) generate random submatrix of same size and see graphical representations of their efficiencies\n"
+    output += "    (5) look for the optimal choice of submatrix\n"
     while True:
-        option = input("Would you like to choose a message to hide (1) \nor to generate random messages and see a graphical representations of their embedding efficiencies (2)? ")
-        if (not (option == '1' or option == '2')):
+        option = input(output)
+        if (not (option == '1' or option == '2' or option == '3' or option == '4' or option == '5')):
             print("Unrecognized input. Try again.")
         else:
             return option
+
+def arbitrary_payload():
+    global cover, h, sub_height, sub_width, message
+    cover = select_img()
+    sub_h = get_sub_h()
+    print("Submatrix currently fixed at\n", np.asarray(sub_h))
+    sub_height = len(sub_h)
+    sub_width = len(sub_h[0])
+
+    message = get_user_message(sub_width)
+    print("Generating matrix H...\n")
+    h = get_h(sub_h, len(message), len(cover))
+    print("H = \n" + str(h))
+
+    reset_global_vars(sub_height)
+    embed(message, sub_width)
+    extract(h)
+
+    distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+    print("Distortion:", distortion)
+    print("Message length:", len(message))
+    print("Result in efficiency:", get_efficiency(len(message), distortion))
+
+def random_payload_efficiencies():
+    global cover, h, sub_height, sub_width, message, show_img
+    show_img = False
+    cover = select_img(13)
+    
+    sub_h = get_sub_h()
+    print("Submatrix currently fixed at\n", np.asarray(sub_h))
+    sub_height = len(sub_h)
+    sub_width = len(sub_h[0])
+
+    message_number = 30
+    abscissa = []
+    ordinate = []
+    for inverse_alpha in range(10, 20 + 2, 2):
+        print("1 / alpha = ", inverse_alpha)
+        alpha = 1 / inverse_alpha
+        message_length = math.floor(len(cover) * alpha) 
+        messages = get_random_payloads(message_number, message_length)
+        h = get_h(sub_h, len(messages[0]), len(cover))
+        efficiencies = []
+        for i in range(message_number):
+            print("    message", i, "/", message_number)
+            message = messages[i]
+            
+            reset_global_vars(sub_height)
+            embed(message, sub_width)
+
+            distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+            efficiencies.append(get_efficiency(message_length, distortion))
+            print("Message length = ", message_length, ", distortion = ", distortion, ", efficiency = ", efficiencies[i])
+        abscissa.append(inverse_alpha)
+        ordinate.append(np.median(np.asarray(efficiencies)))
+    generate_graph("For n = " + str(len(cover)) + " sub_width = " + str(sub_width) + " sub_height = " + str(sub_height), abscissa, ordinate, "1 / alpha", "efficiency")
+
+def random_submatrix_distortions():
+    global cover, h, sub_height, sub_width, message, show_img
+    cover = select_img(13)
+    show_img = False
+    sizes = np.asarray([(2, 2), (3, 5), (4, 7), (6, 7)])
+    sub_hs = []
+    print("Generating submatrix")
+    for s in sizes:
+        sub_hs.append(get_random_sub_h(s[0], s[1]))
+    abscissa = []
+    ordinate = []
+    alpha = 0.1
+    message_length = math.floor(len(cover) * alpha)
+    message = get_random_payloads(1, message_length)[0]
+    for i in range(len(sub_hs)):
+        print("Submatrix", i, "/", len(sub_hs))
+        sub_h = sub_hs[i]
+        sub_height = len(sub_h)
+        sub_width = len(sub_h[0])
+        print("Generating H")
+        h = get_h(sub_h, len(message), len(cover))
+
+        reset_global_vars(sub_height)
+        embed(message, sub_width)
+
+        distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+        abscissa.append(i + 1)
+        ordinate.append(distortion)
+
+    x_label = "sizes: "
+    for i in range(len(sizes)):
+        x_label += "(" + str(sizes[i][0]) + "x" + str(sizes[i][1]) + ")"
+        if(i != len(sizes) - 1):
+            x_label += ", "
+
+    generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, x_label, "distortion")
+
+def random_submatrix_efficiencies():
+    global cover, h, sub_height, sub_width, message, show_img
+    cover = select_img(13)
+    show_img = False
+    sub_height = strict_integer_input("\nSubmatrix height: ")
+    sub_width = strict_integer_input("Submatrix width: ")
+    sub_hs = []
+    submatrix_number = 100
+    print("Generating submatrix")
+    for i in range(submatrix_number):
+        sub_hs.append(get_random_sub_h(sub_height, sub_width))
+    abscissa = []
+    ordinate = []
+    alpha = 0.1
+    message_length = math.floor(len(cover) * alpha)
+    message = get_random_payloads(1, message_length)[0]
+    for i in range(len(sub_hs)):
+        print("submatrix", i, "/", len(sub_hs))
+        sub_h = sub_hs[i]
+        print("Generating H")
+        h = get_h(sub_h, len(message), len(cover))
+
+        reset_global_vars(sub_height)
+        embed(message, sub_width)
+
+        distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+        efficiency = get_efficiency(message_length, distortion)
+        abscissa.append(i + 1)
+        ordinate.append(efficiency)
+    ordinate = -np.sort(-np.asarray(ordinate))
+    generate_graph("For n = " + str(len(cover)) + ", alpha = " + str(alpha), abscissa, ordinate, "random submatrix sorted by efficiency", "efficiency")
+
+def get_optimal_submatrix():
+    global cover, h, sub_height, sub_width, message, show_img
+    cover = select_img(13)
+    show_img = False
+    sub_height = strict_integer_input("\nSubmatrix height: ")
+    sub_width = strict_integer_input("Submatrix width: ")
+    sub_hs = []
+    submatrix_number = 100
+    print("Generating submatrix")
+    for i in range(submatrix_number):
+        sub_hs.append(get_random_sub_h(sub_height, sub_width))
+    efficiencies = []
+    alpha = 0.1
+    message_length = math.floor(len(cover) * alpha)
+    message = get_random_payloads(1, message_length)[0]
+    for i in range(len(sub_hs)):
+        print("submatrix", i, "/", len(sub_hs))
+        sub_h = sub_hs[i]
+        print("Generating H")
+        h = get_h(sub_h, len(message), len(cover))
+
+        reset_global_vars(sub_height)
+        embed(message, sub_width)
+
+        distortion = calculate_distortion(Image.open(path).convert('L'), stego_img)
+        efficiency = get_efficiency(message_length, distortion)
+        efficiencies.append(efficiency)
+    print("Best submatrix found:\n", sub_hs[np.argmax(efficiencies)])
+
 
 def get_user_message(sub_width):
 
@@ -43,23 +215,19 @@ def get_user_message(sub_width):
             for j in range(len(str_bits)):
                 message[i * 12 + j] = str_bits[j]
         return message
-        
+
     while True:
         txt_input = input("What would you like to hide today? ")
         bin_input = txt_to_bin(txt_input)
         if len(bin_input) > len(cover):
             print("\nThis message is too large for the selected cover! Try something shorter.")
         else:
-            size = len(cover)//sub_width
-            str(bin_input).ljust(size - len(bin_input), '0')
+            #size = len(cover)//sub_width
+            #str(bin_input).ljust(size - len(bin_input), '0')
             return bin_input
 
-def get_random_payloads():
-    size = len(cover)//sub_width
-    messages = []
-    for i in range(10):
-        messages.append(str(BitArray([random.randint(0, 1) for _ in range(42)])).ljust(size, '0'))
-    return messages
+def get_random_payloads(message_number, message_length):
+    return np.random.randint(0, 2, (message_number, message_length))
 
 def strict_integer_input(output):
     while True:
@@ -84,40 +252,23 @@ def strict_binary_input(output):
             break
     return int(value)
 
-def select_img():
+def select_img(cover_number = None):
     global path
-    while True:
-        cover_number = strict_integer_input("\nSelect image as cover [1-10]:")
-        if (cover_number > 10):
-            print("\nUp to 10 only!")
-        else:
-            break
-    path = './' + str(cover_number) + '.png'
+    if(cover_number == None):
+        while True:
+            cover_number = strict_integer_input("\nSelect image as cover [1-13]:")
+            if (cover_number > 13):
+                print("\nUp to 13 only!")
+            else:
+                break
+    path = './img/' + str(cover_number) + '.pgm'
     img_bits = img_to_lsb(path)
     print("Cover: " + str(img_bits) + '\n')
     return img_bits
 
 def img_to_lsb(path):
     img = Image.open(path).convert('L')
-    return  np.asarray(img).flatten()
-
-def get_optimal_sub_h(edge_size, alpha, sub_height, sub_width, iteration_number, message_number, path = ()):
-    if(path):
-        image = open_image(path)
-    else:
-        image = generate_random_img()
-    pixels = get_pixels(image)
-    x = pixels_to_LSB(pixels)
-    message_length = len(pixels) * alpha
-    messages = get_random_msg(message_length, message_number)
-    submatrixes = np.empty((iteration_number, sub_height, sub_width), "uint8")
-    avg_efficiencies = np.empty(iteration_number)
-    for i in range(iteration_number):
-        sub_h = get_random_sub_h(sub_height, sub_width)
-        submatrixes[i] = sub_h
-        H = createH(sub_h)
-        avg_efficiencies[i] = get_avg_efficiency(x, H, sub_h, messages, edge_size)
-    return submatrixes[np.argmax(avg_efficiencies)]
+    return  np.mod(np.asarray(img), 2).flatten()
 
 def get_random_sub_h(sub_height, sub_width):
     sub_h = np.random.randint(0, 2, (sub_height, sub_width), "uint8")
@@ -127,35 +278,34 @@ def get_random_sub_h(sub_height, sub_width):
         sub_h[sub_height - 1][np.random.randint(sub_width)] = 1
     return sub_h
 
-def get_efficiency(pixels, alpha, distortion):
-    return pixels * alpha / (distortion + 1)
-
-def get_avg_efficiency(x, H, sub_h, messages, edge_size):
-    message_number = len(messages)
-    efficiencies = np.zeros(message_number)
-    for i in range(message_number):
-        message = messages[i]
-        y = ugly_trellis(H, sub_h, x, message)
-        distortion = get_distortion(x, y)
-        efficiencies[i] = get_efficiency(edge_size ** 2, alpha, distortion)
-    avg_efficiency = np.mean(efficiencies)
-    return avg_efficiency
+def get_efficiency(message_length, distortion):
+    if(distortion == 0):
+        return message_length / 0.1
+    return message_length / distortion
 
 def get_sub_h():
     sub_h = []
-    sub_width = strict_integer_input("\nSubmatrix width: ")
-    sub_height = strict_integer_input("Submatrix height: ")
+    sub_height = strict_integer_input("\nSubmatrix height: ")
+    sub_width = strict_integer_input("Submatrix width: ")
 
-    print("We're now building the submatrix, element by element.\n")
+    while True:
+            option = input("Would you like to\n    (1) generate a randomized submatrix\n    (2) manually input a submatrix\n")
+            if (not (option == '1' or option == '2')):
+                print("Unrecognized input. Try again.")
+            else:
+                break
+    match option:
+        case '1':
+            print("Generating submatrix...\n")
+            sub_h = get_random_sub_h(sub_height, sub_width)
+        case '2':
+            print("We're now building the submatrix, element by element.\n")
 
-    for row in range(sub_height):
-        sub_h.append([])
-        for column in range(sub_width):
-            sub_h[row].append(strict_binary_input(f'Enter binary number for row {row}, column {column}: '))
-
-    print("Inputs done!\n")
-    print("Generating submatrix...\n")
-    print(sub_h)
+            for row in range(sub_height):
+                sub_h.append([])
+                for column in range(sub_width):
+                    sub_h[row].append(strict_binary_input(f'Enter binary number for row {row}, column {column}: '))
+            print("Inputs done!\n")
     return sub_h
 
 def get_h(sub_h, payload_size, message_size):
@@ -179,7 +329,7 @@ def get_h(sub_h, payload_size, message_size):
 
     return h
 
-def init_trellis():
+def init_trellis(sub_height):
     tree = Tree()
     root = tree.get_tree_root()
     root.add_features(y_bit='-')
@@ -236,7 +386,7 @@ def move_inside_block(sub_width, tree):
     exit_block()
 
 def exit_block():
-    global cover_index, message_index, y
+    global cover_index, message_index, y, tree
     column_nodes = tree.search_nodes(level=cover_index)
 
     for node in column_nodes:
@@ -244,7 +394,7 @@ def exit_block():
             connect_blocks(node)
 
 def connect_blocks(node):
-    global message_index
+    global message_index, tree
     next_state = '0' + node.state[:-1]
     existing_node = tree.search_nodes(state=next_state, level=node.level+1)
 
@@ -262,7 +412,7 @@ def connect_blocks(node):
         if(message_index == len(message) - 1):
             get_y(new_node)
 
-def embed():
+def embed(message, sub_width):
     global message_index
     for index in range(len(message)):
         message_index = index
@@ -279,10 +429,13 @@ def get_y(node):
         y.append(cover[i])
 
     print("\nCalculating stego object done.")
-    print("Opening both images...")
+    if(show_img):
+        print("Opening both images...")
     display_imgs()
 
 def display_imgs():
+    global stego_img
+
     img = Image.open(path).convert('L')
     img_pixels = np.asarray(img, 'uint8')
 
@@ -290,15 +443,16 @@ def display_imgs():
         global path, cover
         stego_pixels = []
         difference = []
-
-        for i in range(len(cover)):
-            difference.append(y[i] - cover[i])
+        difference = np.absolute(y - cover)
         difference_matrix = vector_to_matrix(difference)
 
         for i in range(len(img_pixels)):
             stego_pixels.append([])
             for j in range(len(img_pixels[0])):
                 stego_pixels[i].append(img_pixels[i][j] + difference_matrix[i][j])
+                # Instead of adding 1, we decrement the maximum (255) by 1
+                if(stego_pixels[i][j] == 256):
+                    stego_pixels[i][j] = 254
         return np.asarray(stego_pixels, 'uint8')
 
     def vector_to_matrix(vector):
@@ -312,10 +466,12 @@ def display_imgs():
         return matrix
 
     cover_img = Image.fromarray(img_pixels, 'L')
-    cover_img.show(title="Cover image")
+    if(show_img):
+        cover_img.show(title="Cover image")
     stego_pixels = get_stego_pixels()
     stego_img = Image.fromarray(stego_pixels, 'L')
-    stego_img.show(title="Stego image")
+    if(show_img):
+        stego_img.show(title="Stego image")
 
 def extract(h):
 
@@ -345,7 +501,7 @@ def extract(h):
             txt_bits.append(int(''.join(np.array(message, '<U1')[i:i+12]), 2))
         return txt_bits
 
-    m = np.matmul(h, y)
+    m = np.matmul(h, np.mod(np.asarray(stego_img),2).flatten())
     for i in range(len(m)):
         m[i] %= 2
 
@@ -361,37 +517,24 @@ def generate_graph(title, x, y, x_label, y_label):
     plt.title(title)
     plt.show()
 
+def calculate_distortion(cover_img, stego_img):
+    return np.absolute(np.asarray(cover_img, np.int16).flatten() - np.asarray(stego_img, np.int16).flatten()).sum()
+
 if __name__ == '__main__':
 
     print("\nHello! Welcome to our approach to PLS embedding using Syndrome-Trellis Coding.")
     print("We hope this command-line finds you well.\n")
 
-
-    print("Submatrix currently fixed at [[1, 0], [1, 1]].")
-    sub_h = [[1, 0], [1, 1]]
-    sub_height = 2
-    sub_width = 2
-    tree = init_trellis()
-
-    cover = select_img()
     option = get_user_input()
 
     match(option):
         case '1':
-            message = get_user_message(sub_width)
-            print("Generating matrix H...\n")
-            h = get_h(sub_h, len(message), len(cover))
-            print("H = \n" + str(h))
-
-            embed()
-            extract(h)
+            arbitrary_payload()
         case '2':
-            messages = get_random_payloads()
-            for msg in messages:
-                message = msg
-                print("Generating matrix H...\n")
-                h = get_h(sub_h, len(message), len(cover))
-                print("H = \n" + str(h))
-
-                embed()
-                # calculate efficiency for each embedding, add to array, project
+            random_payload_efficiencies()
+        case '3':
+            random_submatrix_distortions()
+        case '4':
+            random_submatrix_efficiencies()
+        case '5':
+            get_optimal_submatrix()
