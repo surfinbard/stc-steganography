@@ -50,6 +50,7 @@ The remaining positions in _H_ should be filled with zeros.
 We now need to traverse the trellis with the output we get from processing the inputs. The first node **y** visits is the one on the top left position (in the trellis we used as an example, that would be state 00 column p0: **s00p0**). After the initial node, the choice of the next nodes will differ: if we’re moving between blocks, it behaves one way; if we’re moving inside a block, it behaves another. 
 
 **Inside blocks**, each node visited is linked to two nodes on the following column. The first one is always directly to the right, and corresponds to a 0 **y** bit, meaning we’re not reading any column of _H_ for this move. The other node’s position **does** take _H_ into account: the **y** bit associated is 1. Its state is determined by performing a modulo 2 operation (XOR, bit by bit) between the current node’s state and the i<sup>th</sup> column of _H_.
+
 Like this:
 
 ![The process of scanning the matrix H column by column, along with the current node state](res/scanning.jpg)
@@ -86,10 +87,10 @@ You can either choose a message to hide or generate random sets of data, embed t
 
 From this point on, all you need to do is follow the instructions you’ll see on the command-line!
 
-Happy hiding :-) 
-
 ## Troubleshooting
 
 All inputs are checked for validity, in case you type in something invalid, the command-line should warn you. Just check what it says and you should be good to go.
 
 Sometimes, the messages we choose are too large for embedding. Limited space, y’all. Try something shorter, maybe? (And no, we’re not converting directly to ASCII. We’re using Lempel-Ziv to decrease the size of the binary message during conversion. Feel free to change things up from here on!)
+
+Happy hiding :-) 
