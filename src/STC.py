@@ -261,7 +261,7 @@ def select_img(cover_number = None):
                 print("\nUp to 13 only!")
             else:
                 break
-    path = './img/' + str(cover_number) + '.pgm'
+    path = '../img/' + str(cover_number) + '.pgm'
     img_bits = img_to_lsb(path)
     print("Cover: " + str(img_bits) + '\n')
     return img_bits
