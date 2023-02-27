@@ -10,7 +10,7 @@ With this program, you can hide text inside images. With a few extra lines of co
 
 ## Theory overview
 
-This program is based on the works of Tomáš Filler, Jan Judas and Jessica Fridrich: "Minimizing Additive Distortion in Steganography Using Syndrome-Trellis Codes" and “Minimizing Embedding Impact in Steganography using Trellis codes quantization”. It’s ideal to have an overview of the contents of these articles before moving ahead, though not mandatory.
+This program was guided by Wadih Sawaya and is based on the works of Tomáš Filler, Jan Judas and Jessica Fridrich: "Minimizing Additive Distortion in Steganography Using Syndrome-Trellis Codes" and “Minimizing Embedding Impact in Steganography using Trellis codes quantization”. It’s ideal to have an overview of the contents of these articles before moving ahead, though not mandatory.
 
 The problem of hiding data inside data can be approached two different ways: **PLS**, or Payload-Limited Sender (fixed payload size, minimizing distortion) and **DLS**, or Distortion-Limited Sender (fixed distortion value, maximizing payload). 
 
