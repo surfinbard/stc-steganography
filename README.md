@@ -23,7 +23,7 @@ The process of embedding a message into a cover image is simple:
 	1. We create a structure called a trellis, which we’ll use to process the input;
 	2. We scan and process the message, and use the output of the processing to “walk through” the trellis;
 	3. When the entire input has been processed, we end up with either one or multiple candidates for the stego object y;
-	3.1 Since we aim for undetectability, we select the one with the lowest cost and convert it into image format
+	3.1 Since we aim for undetectability, we select the one with the lowest cost and convert it into image format.
 
 ###### Creating the trellis:
 
@@ -31,13 +31,13 @@ The process of embedding a message into a cover image is simple:
 
 It needs 2<sup>h</sup> rows and _n ⋅ (w+1)_ columns, with _w_ and _h_ as the width and height of the **system key**, a small matrix called _Ĥ_. _n_ is the message size, in bits, after being converted to binary. 
 We assume the only part of the system that is secret is its key, _Ĥ_. It should be known only by the sender and the receiver, and shared beforehand.
-The rows are called states, each one a binary number, ranging from 0 to 2<sup>h-1</sup>. The columns are grouped into _m_ blocks, each one with _(w+1)_ columns.
+The rows are called states, each one a binary number, ranging from 0 to 2<sup>h-1</sup>. The columns are grouped into _m_ blocks, each one with _(w+1)_ columns. (What are the width and height of the _Ĥ_ that generated the trellis above?)
 
 ###### Processing the input set 
 
 We need to scan and process the set **{message, cover image, special matrix H}**. This will output binary bits at each step. These bits determine the steps we take through the trellis, as well as the _stego object_ **y**.
 
-###### Constructing Ĥ
+###### Constructing H
 
 The special matrix H<sub>[αn, n]</sub> is constructed by placing the system key _Ĥ_ repeatedly, side by side, one row down each time, from `[0,0]` up until it reaches the right bound of _H_. _α_ is equal to the payload size and _n_ is the cover image size. If the last placement of Ĥ overflows by one or more rows, all overflowing elements are discarded. When finished, it should look like this:
 
@@ -55,13 +55,17 @@ Like this:
 
 ![The process of scanning the matrix H column by column, along with the current node state](res/scanning.jpg)
 
-One move directly to the right, one move with modulo 2: 00 ⊕ 11 = 11. Every next column inside a block consumes the next column of _H_.
+One move directly to the right, one move with modulo 2: 00 ⊕ 11 = 11. 
 
-**Between blocks**, it goes a little different: only nodes in states with a LSB (least significant bit) corresponding to the current message bit will be linked. A node’s following row is determined by slightly altering its state: we “push out” the LSB and push in, from the left, a 0. (e.g., with a current message bit of 1, 01 becomes 00; 11 becomes 01 and so on). At every end of block, a message bit is consumed. 
+Every next column **inside a block** consumes the next column of _H_.
+
+**Between blocks**, it goes a little different: only nodes in states with a LSB (least significant bit) **equal to the current message bit** will be linked. (e.g., on the trellis above, if the next message bit to be consumed is 0, only the nodes in states 00 and 10 will have links to the right).
+
+When transitioning between blocks of nodes, the next state (and, consequently, the next row) of a node is determined by slightly altering its state: we “push out” the LSB and push in, from the left, a 0. (With a current message bit of 1, 01 becomes 00; 11 becomes 01 and so on). At every end of block, a message bit is consumed. 
 
 We link nodes until the last message bit has been accounted for, when we reach the final block. We’ll have in our hands the candidate(s) for **y**, that is, all the paths that managed to make it through the end. 
 
-All nodes already have their costs (and total cost so far) stored, so we select the one with lesser total cost and convert it to image format, the same way we initially converted the cover image into a vector, but the other way around. 
+All nodes already have their costs (and total cost so far) stored, so we select the one with lesser total cost and convert it to image format (he same way we initially converted the cover image into a vector, but the other way around).
 
 And that’s it! We now have successfully hidden a piece of text into an image. Neat, huh?
 
@@ -80,17 +84,19 @@ You’ll need:
 If for some reason you don’t have everything you need by the time you run the code, don’t worry. The error message prompted on the command line will tell you what you need.
 
 ## Usage
-
-You can either choose a message to hide or generate random sets of data, embed them and plot comparisons between their performances. The options are offered on the menu that’s prompted when you run the code, that looks like this: 
+ 
+You can **either** choose a message to hide **or** generate random sets of data, embed them and plot comparisons between their performances. The options are offered on the menu that’s prompted when you run the code, that looks like this: 
 
 ![The main menu](res/menu.jpg)
 
-From this point on, all you need to do is follow the instructions you’ll see on the command-line!
+From this point on, all you need to do is follow the instructions you're shown!
 
 ## Troubleshooting
 
 All inputs are checked for validity, in case you type in something invalid, the command-line should warn you. Just check what it says and you should be good to go.
 
-Sometimes, the messages we choose are too large for embedding. Limited space, y’all. Try something shorter, maybe? (And no, we’re not converting directly to ASCII. We’re using Lempel-Ziv to decrease the size of the binary message during conversion. Feel free to change things up from here on!)
+Sometimes, the messages we choose are too large for embedding. Limited space, y’all. Try something shorter, maybe? (And no, we’re not converting directly to ASCII. We’re using Lempel-Ziv to decrease the size of the binary message during conversion (Thanks for the tip, Mr. Sawaya). Feel free to change things up from here on!)
+
+
 
 Happy hiding :-) 
