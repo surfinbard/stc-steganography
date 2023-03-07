@@ -1,6 +1,6 @@
 # STC-Steganography
 
-A distortion limiting approach to Syndrome-Trellis Coding.
+A distortion limiting approach to Syndrome-Trellis Coding. Based on the work of Tomáš Filler, Jan Judas and Jessica Fridrich: "Minimizing Additive Distortion in Steganography Using Syndrome-Trellis Codes". Guided by Wadih Sawaya.
 
 ## Introduction
 
